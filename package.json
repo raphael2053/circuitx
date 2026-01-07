@@ -3,6 +3,7 @@
   "displayName": "CircuitX",
   "description": "Open-source AI code agent",
   "version": "0.0.1",
+  "publisher": "circuitx",
   "engines": {
     "vscode": "^1.107.0"
   },
