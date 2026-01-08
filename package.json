@@ -8,17 +8,62 @@
     "vscode": "^1.107.0"
   },
   "categories": [
-    "Other"
+    "AI",
+    "Chat"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:circuitx.chatView"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "circuitx.helloWorld",
-        "title": "Hello World"
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "circuitx-panel",
+          "title": "CircuitX",
+          "icon": "$(comment-discussion)"
+        }
+      ]
+    },
+    "views": {
+      "circuitx-panel": [
+        {
+          "type": "webview",
+          "id": "circuitx.chatView",
+          "name": "AI Chat"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "CircuitX",
+      "properties": {
+        "circuitx.providers": {
+          "type": "array",
+          "default": [],
+          "description": "Configured LLM providers",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "isDefault": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
       }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

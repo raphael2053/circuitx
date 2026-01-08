@@ -19,14 +19,14 @@
 
 **Purpose**: Initialize project structure and configure build tools
 
-- [ ] T001 Update package.json with webview view contribution, viewsContainers, and activation events
-- [ ] T002 [P] Create directory structure: src/webview/{pages,components,styles}, src/services, src/models, src/utils
-- [ ] T003 [P] Create CSS variables stylesheet for VS Code theming in src/webview/styles/main.css
-- [ ] T004 [P] Create UUID utility module using crypto.randomUUID() in src/utils/uuid.ts
-- [ ] T005 [P] Create error handling utilities with custom error types in src/utils/errors.ts
-- [ ] T006 [P] Create TypeScript interfaces for Session, Message entities in src/models/Session.ts
-- [ ] T007 [P] Create TypeScript interfaces for LLMProvider entity in src/models/LLMProvider.ts
-- [ ] T008 [P] Create TypeScript interfaces for webview message protocol in src/models/WebviewMessages.ts
+- [X] T001 Update package.json with webview view contribution, viewsContainers, and activation events
+- [X] T002 [P] Create directory structure: src/webview/{pages,components,styles}, src/services, src/models, src/utils
+- [X] T003 [P] Create CSS variables stylesheet for VS Code theming in src/webview/styles/main.css
+- [X] T004 [P] Create UUID utility module using crypto.randomUUID() in src/utils/uuid.ts
+- [X] T005 [P] Create error handling utilities with custom error types in src/utils/errors.ts
+- [X] T006 [P] Create TypeScript interfaces for Session, Message entities in src/models/Session.ts
+- [X] T007 [P] Create TypeScript interfaces for LLMProvider entity in src/models/LLMProvider.ts
+- [X] T008 [P] Create TypeScript interfaces for webview message protocol in src/models/WebviewMessages.ts
 
 ---
 
