@@ -146,6 +146,26 @@ export class LLMService {
 
 	/**
 	 * Parse Server-Sent Events stream
+	 * The streaming flow:
+	 * 1. fetch() starts connection to OpenAI
+	 * ↓
+	 * 2. _parseSSEStream() gets the response body
+	 * ↓
+	 * 3. while(true) loop reads chunks:
+	 * │
+	 * ├─► reader.read() → waits for next chunk from server
+	 * │         ↓
+	 * │   onChunk("Hello")  → sends to UI
+	 * │         ↓
+	 * ├─► reader.read() → waits for next chunk
+	 * │         ↓
+	 * │   onChunk(" world") → sends to UI
+	 * │         ↓
+	 * ├─► reader.read() → server sends [DONE]
+	 * │         ↓
+	 * │   break; → exit loop
+	 * ↓
+	 * 4. onComplete() → finished!
 	 */
 	private async _parseSSEStream(
 		response: Response,

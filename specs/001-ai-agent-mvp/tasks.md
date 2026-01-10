@@ -116,21 +116,21 @@
 
 ### Tests First (Write these before implementation)
 
-- [ ] T034 Write integration test: LLM response streams progressively in src/test/integration/chat-streaming.test.ts
-- [ ] T035 Write integration test: Multi-turn conversation maintains context in src/test/integration/multi-turn.test.ts
-- [ ] T036 Write integration test: Loading state appears within 100ms in src/test/integration/chat-streaming.test.ts
-- [ ] T037 Write integration test: Error shown when no provider configured in src/test/integration/chat-errors.test.ts
+- [X] T034 Write integration test: LLM response streams progressively in src/test/integration/chat-streaming.test.ts
+- [X] T035 Write integration test: Multi-turn conversation maintains context in src/test/integration/multi-turn.test.ts
+- [X] T036 Write integration test: Loading state appears within 100ms in src/test/integration/chat-streaming.test.ts
+- [X] T037 Write integration test: Error shown when no provider configured in src/test/integration/chat-errors.test.ts
 
 ### Implementation (Only after tests are written and failing)
 
-- [ ] T038 [P] Create MessageList component rendering messages chronologically in src/webview/components/MessageList.ts
-- [ ] T039 Implement ChatPage.render() with message stream and input in src/webview/pages/ChatPage.ts
-- [ ] T040 Add loading state display (spinner/indicator) to ChatPage in src/webview/pages/ChatPage.ts
-- [ ] T041 Implement chatChunk message handler for progressive streaming in src/webview/WebviewProvider.ts
-- [ ] T042 Add chatComplete and chatError handlers in src/webview/WebviewProvider.ts
-- [ ] T043 Implement message appending to active session in src/services/SessionService.ts
-- [ ] T044 Add auto-scroll to bottom when new messages arrive in src/webview/components/MessageList.ts
-- [ ] T045 Implement "no provider configured" error handling (FR-045) in src/webview/WebviewProvider.ts
+- [X] T038 [P] Create MessageList component rendering messages chronologically in src/webview/components/MessageList.ts
+- [X] T039 Implement ChatPage.render() with message stream and input in src/webview/pages/ChatPage.ts
+- [X] T040 Add loading state display (spinner/indicator) to ChatPage in src/webview/pages/ChatPage.ts
+- [X] T041 Implement chatChunk message handler for progressive streaming in src/webview/WebviewProvider.ts
+- [X] T042 Add chatComplete and chatError handlers in src/webview/WebviewProvider.ts
+- [X] T043 Implement message appending to active session in src/services/SessionService.ts
+- [X] T044 Add auto-scroll to bottom when new messages arrive in src/webview/components/MessageList.ts
+- [X] T045 Implement "no provider configured" error handling (FR-045) in src/webview/WebviewProvider.ts
 
 **Checkpoint**: User Stories 1 AND 2 complete - full chat experience works
 

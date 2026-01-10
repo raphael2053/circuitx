@@ -51,15 +51,16 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 
 	/**
 	 * Resolve the webview view
-	 * User clicks CircuitX panel icon
-         ↓
-VS Code looks up the view type ("circuitx.chatView")
-         ↓
-VS Code finds your registered provider
-         ↓
-VS Code calls resolveWebviewView() on your provider
-         ↓
-Your code sets up the webview
+	 * Resolution Flow:
+	 * 1. User clicks CircuitX panel icon
+	 * ↓
+	 * 2. VS Code looks up the view type ("circuitx.chatView")
+	 * ↓
+	 * 3. VS Code finds your registered provider
+	 * ↓
+	 * 4. VS Code calls resolveWebviewView() on your provider
+	 * ↓
+	 * 5. Your code sets up the webview
 	 */
 	public async resolveWebviewView(
 		webviewView: vscode.WebviewView,
@@ -199,11 +200,23 @@ Your code sets up the webview
 		// FR-007: Show loading state within 100ms
 		this._updateState({ isLoading: true, error: undefined });
 
-		// Get default provider
+		// Get default provider (T045: FR-045 error handling)
 		const provider = await this.providerService.getDefaultProvider();
 		if (!provider) {
-			this._updateState({ isLoading: false, error: 'No AI provider configured' });
-			throw new NoProviderConfiguredError();
+			// FR-045: Helpful error when no default provider is configured
+			const errorMessage = 'No LLM provider configured. Please set up a provider in Settings (⚙️).';
+			this._updateState({ isLoading: false, error: errorMessage });
+			
+			// Post error to webview
+			this._postMessage({
+				type: 'chatError',
+				payload: {
+					sessionId: sessionId || '',
+					error: errorMessage,
+				},
+				requestId: message.requestId,
+			});
+			return; // Don't throw, just return after showing error
 		}
 
 		// Get API key

@@ -1,6 +1,14 @@
 /**
- * ChatPage - Active conversation page
+ * ChatPage - Active conversation page (T039, T040)
  * Shows current session messages and allows sending new messages
+ * 
+ * Implements:
+ * - FR-008: Active Chat page displays full-width message stream with title
+ * - FR-009: No session list sidebar (single-page navigation)
+ * - FR-010: Messages in chronological order
+ * - FR-011: New messages appended via bottom input
+ * - FR-012: Loading state within 100ms
+ * - FR-013: Progressive LLM response streaming
  * 
  * This page displays:
  * - Session title in header
@@ -10,7 +18,8 @@
  */
 
 import { Toolbar } from '../components/Toolbar';
-import { Session, Message } from '../../models/Session';
+import { MessageList, MessageListScript } from '../components/MessageList';
+import { Session } from '../../models/Session';
 
 export interface ChatPageProps {
 	session: Session;
@@ -34,9 +43,12 @@ export function ChatPage(props: ChatPageProps): string {
 			</div>
 			
 			<div class="chat-messages" id="chat-messages">
-				${renderMessages(session.messages, streamingContent)}
-				${isLoading && !streamingContent ? renderLoadingIndicator() : ''}
-				${error ? renderError(error) : ''}
+				${MessageList({
+					messages: session.messages,
+					streamingContent,
+					isLoading,
+					error,
+				})}
 			</div>
 			
 			<div class="chat-input-container">
@@ -55,6 +67,8 @@ export function ChatPage(props: ChatPageProps): string {
 				</div>
 			</div>
 		</div>
+		
+		${MessageListScript()}
 		
 		<script>
 			(function() {
@@ -112,113 +126,7 @@ export function ChatPage(props: ChatPageProps): string {
 }
 
 /**
- * Render all messages in the conversation
- */
-function renderMessages(messages: Message[], streamingContent?: string): string {
-	let html = messages.map(renderMessage).join('');
-
-	// Add streaming content as partial assistant message
-	if (streamingContent) {
-		html += `
-			<div class="message message-assistant streaming">
-				<div class="message-avatar">🤖</div>
-				<div class="message-content">
-					<div class="message-text">${escapeHtml(streamingContent)}<span class="cursor">▊</span></div>
-				</div>
-			</div>
-		`;
-	}
-
-	return html;
-}
-
-/**
- * Render a single message
- */
-function renderMessage(message: Message): string {
-	const isUser = message.role === 'user';
-	const avatarEmoji = isUser ? '👤' : '🤖';
-	const roleClass = isUser ? 'message-user' : 'message-assistant';
-
-	return `
-		<div class="message ${roleClass}">
-			<div class="message-avatar">${avatarEmoji}</div>
-			<div class="message-content">
-				<div class="message-text">${formatMessageContent(message.content)}</div>
-				<div class="message-timestamp">${formatTimestamp(message.timestamp)}</div>
-			</div>
-		</div>
-	`;
-}
-
-/**
- * Render loading indicator
- */
-function renderLoadingIndicator(): string {
-	return `
-		<div class="message message-assistant loading">
-			<div class="message-avatar">🤖</div>
-			<div class="message-content">
-				<div class="loading-dots">
-					<span></span>
-					<span></span>
-					<span></span>
-				</div>
-			</div>
-		</div>
-	`;
-}
-
-/**
- * Render error message
- */
-function renderError(error: string): string {
-	return `
-		<div class="chat-error">
-			<span class="error-icon">⚠️</span>
-			<span class="error-message">${escapeHtml(error)}</span>
-			<button class="btn btn-link retry-btn" id="retry-btn">Retry</button>
-		</div>
-	`;
-}
-
-/**
- * Format message content (basic markdown-like formatting)
- */
-function formatMessageContent(content: string): string {
-	// Escape HTML first
-	let formatted = escapeHtml(content);
-
-	// Convert code blocks (```...```)
-	formatted = formatted.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
-
-	// Convert inline code (`...`)
-	formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-	// Convert newlines to <br> (outside of code blocks)
-	formatted = formatted.replace(/\n/g, '<br>');
-
-	return formatted;
-}
-
-/**
- * Format timestamp for display
- */
-function formatTimestamp(isoString: string): string {
-	const date = new Date(isoString);
-	const now = new Date();
-	const isToday = date.toDateString() === now.toDateString();
-
-	if (isToday) {
-		return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-	}
-
-	return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
-		date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-/**
- * Escape HTML to prevent XSS
+ * Escape HTML to prevent XSS (needed for title)
  */
 function escapeHtml(text: string): string {
 	const map: Record<string, string> = {

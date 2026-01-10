@@ -539,3 +539,213 @@ body {
 ::-webkit-scrollbar-thumb:hover {
 	background-color: var(--vscode-scrollbarSlider-activeBackground);
 }
+
+/*
+ * Message List Component (T038, T044)
+ * - Message items with avatars
+ * - User/assistant differentiation
+ * - Streaming cursor animation
+ * - Loading dots animation
+ */
+.message-list {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.message {
+	display: flex;
+	flex-direction: row;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.message-avatar {
+	font-size: 20px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	background-color: var(--vscode-editor-background);
+	border-radius: 4px;
+}
+
+.message-content {
+	flex: 1;
+	min-width: 0; /* Allow text wrapping */
+}
+
+.message-text {
+	background-color: var(--vscode-editor-background);
+	border: 1px solid var(--vscode-panel-border);
+	padding: 12px;
+	border-radius: 4px;
+	line-height: 1.6;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.message-user .message-text {
+	background-color: var(--vscode-input-background);
+}
+
+.message-assistant .message-text {
+	background-color: var(--vscode-editor-background);
+}
+
+.message-timestamp {
+	font-size: 11px;
+	color: var(--vscode-descriptionForeground);
+	margin-top: 6px;
+}
+
+/* Streaming cursor animation */
+.streaming-cursor {
+	animation: blink 0.8s infinite;
+	color: var(--vscode-editorCursor-foreground);
+}
+
+@keyframes blink {
+	0%, 50% { opacity: 1; }
+	51%, 100% { opacity: 0; }
+}
+
+/* Loading dots animation (T040) */
+.loading-indicator {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 12px;
+}
+
+.loading-dot {
+	width: 8px;
+	height: 8px;
+	background-color: var(--vscode-foreground);
+	border-radius: 50%;
+	animation: loading-bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dot:nth-child(1) {
+	animation-delay: -0.32s;
+}
+
+.loading-dot:nth-child(2) {
+	animation-delay: -0.16s;
+}
+
+.loading-dot:nth-child(3) {
+	animation-delay: 0s;
+}
+
+@keyframes loading-bounce {
+	0%, 80%, 100% {
+		transform: scale(0);
+		opacity: 0.5;
+	}
+	40% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* Error display in messages */
+.message-error {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px;
+	background-color: var(--vscode-inputValidation-errorBackground);
+	border: 1px solid var(--vscode-inputValidation-errorBorder);
+	border-radius: 4px;
+	color: var(--vscode-errorForeground);
+}
+
+.error-icon {
+	font-size: 16px;
+}
+
+.error-text {
+	flex: 1;
+}
+
+.error-retry-btn {
+	background: none;
+	border: none;
+	color: var(--vscode-textLink-foreground);
+	cursor: pointer;
+	text-decoration: underline;
+	font-size: 13px;
+}
+
+.error-retry-btn:hover {
+	color: var(--vscode-textLink-activeForeground);
+}
+
+/* Code blocks in messages */
+.code-block {
+	background-color: var(--vscode-textCodeBlock-background);
+	border: 1px solid var(--vscode-panel-border);
+	border-radius: 4px;
+	padding: 12px;
+	margin: 8px 0;
+	overflow-x: auto;
+	font-family: var(--vscode-editor-font-family), monospace;
+	font-size: var(--vscode-editor-font-size);
+}
+
+.inline-code {
+	background-color: var(--vscode-textCodeBlock-background);
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-family: var(--vscode-editor-font-family), monospace;
+	font-size: 0.9em;
+}
+
+/* Chat input actions */
+.chat-input-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.btn {
+	padding: 8px 16px;
+	border: none;
+	border-radius: 2px;
+	cursor: pointer;
+	font-size: 13px;
+	transition: background-color 0.2s;
+}
+
+.btn-primary {
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+}
+
+.btn-primary:hover {
+	background-color: var(--vscode-button-hoverBackground);
+}
+
+.btn-secondary {
+	background-color: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+}
+
+.btn-secondary:hover {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.btn-link {
+	background: none;
+	color: var(--vscode-textLink-foreground);
+	padding: 4px 8px;
+}
+
+.btn-link:hover {
+	color: var(--vscode-textLink-activeForeground);
+	text-decoration: underline;
+}
+
