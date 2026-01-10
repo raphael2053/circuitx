@@ -150,25 +150,25 @@
 
 ### Tests First (Write these before implementation)
 
-- [ ] T046 Write integration test: Add provider with all fields in src/test/integration/provider-crud.test.ts
-- [ ] T047 Write integration test: Edit existing provider in src/test/integration/provider-crud.test.ts
-- [ ] T048 Write integration test: Delete provider with confirmation in src/test/integration/provider-crud.test.ts
-- [ ] T049 Write integration test: Set provider as default in src/test/integration/provider-default.test.ts
-- [ ] T050 Write integration test: Prevent deletion of default provider in src/test/integration/provider-crud.test.ts
+- [X] T046 Write integration test: Add provider with all fields in src/test/integration/provider-crud.test.ts
+- [X] T047 Write integration test: Edit existing provider in src/test/integration/provider-crud.test.ts
+- [X] T048 Write integration test: Delete provider with confirmation in src/test/integration/provider-crud.test.ts
+- [X] T049 Write integration test: Set provider as default in src/test/integration/provider-default.test.ts
+- [X] T050 Write integration test: Prevent deletion of default provider in src/test/integration/provider-crud.test.ts
 
 ### Implementation (Only after tests are written and failing)
 
-- [ ] T051 [P] Create ProviderForm component for add/edit modal in src/webview/components/ProviderForm.ts
-- [ ] T052 [P] Create ProviderTable component with Name/URL/Model columns in src/webview/components/ProviderTable.ts
-- [ ] T053 Implement ProvidersPage.render() with table and add button in src/webview/pages/ProvidersPage.ts
-- [ ] T054 Add form validation (required fields, URL format) in src/webview/components/ProviderForm.ts
-- [ ] T055 Implement addProvider message handler in src/webview/WebviewProvider.ts
-- [ ] T056 Implement updateProvider message handler in src/webview/WebviewProvider.ts
-- [ ] T057 Add delete confirmation dialog logic in src/webview/pages/ProvidersPage.ts
-- [ ] T058 Implement deleteProvider with default check in src/services/ProviderService.ts
-- [ ] T059 Add setDefaultProvider functionality in src/services/ProviderService.ts
-- [ ] T060 Implement testProvider connection check in src/services/LLMService.ts
-- [ ] T061 Add loadProviders message handler in src/webview/WebviewProvider.ts
+- [X] T051 [P] Create ProviderForm component for add/edit modal in src/webview/components/ProviderForm.ts
+- [X] T052 [P] Create ProviderTable component with Name/URL/Model columns in src/webview/components/ProviderTable.ts
+- [X] T053 Implement ProvidersPage.render() with table and add button in src/webview/pages/ProvidersPage.ts
+- [X] T054 Add form validation (required fields, URL format) in src/webview/components/ProviderForm.ts
+- [X] T055 Implement addProvider message handler in src/webview/WebviewProvider.ts
+- [X] T056 Implement updateProvider message handler in src/webview/WebviewProvider.ts
+- [X] T057 Add delete confirmation dialog logic in src/webview/pages/ProvidersPage.ts
+- [X] T058 Implement deleteProvider with default check in src/services/ProviderService.ts
+- [X] T059 Add setDefaultProvider functionality in src/services/ProviderService.ts
+- [X] T060 Implement testProvider connection check in src/services/LLMService.ts
+- [X] T061 Add loadProviders message handler in src/webview/WebviewProvider.ts
 
 **Checkpoint**: User Stories 1, 2, AND 3 complete - full provider management works
 
@@ -188,26 +188,26 @@
 
 ### Tests First (Write these before implementation)
 
-- [ ] T062 Write integration test: Session list displays sorted by updatedAt in src/test/integration/history-list.test.ts
-- [ ] T063 Write integration test: Click session title navigates to Chat in src/test/integration/history-navigation.test.ts
-- [ ] T064 Write integration test: Rename session updates title in src/test/integration/history-crud.test.ts
-- [ ] T065 Write integration test: Delete session with confirmation in src/test/integration/history-crud.test.ts
-- [ ] T066 Write integration test: Empty state shown when no sessions in src/test/integration/history-list.test.ts
-- [ ] T067 Write integration test: Pagination handles 1000+ sessions in src/test/integration/history-pagination.test.ts
+- [X] T062 Write integration test: Session list displays sorted by updatedAt in src/test/integration/history-list.test.ts
+- [X] T063 Write integration test: Click session title navigates to Chat in src/test/integration/history-navigation.test.ts
+- [X] T064 Write integration test: Rename session updates title in src/test/integration/history-crud.test.ts
+- [X] T065 Write integration test: Delete session with confirmation in src/test/integration/history-crud.test.ts
+- [X] T066 Write integration test: Empty state shown when no sessions in src/test/integration/history-list.test.ts
+- [X] T067 Write integration test: Pagination handles 1000+ sessions in src/test/integration/history-pagination.test.ts
 
 ### Implementation (Only after tests are written and failing)
 
-- [ ] T068 [P] Create SessionListItem component with title/timestamp/actions in src/webview/components/SessionListItem.ts
-- [ ] T069 [P] Create SessionList component with vertical list layout in src/webview/components/SessionList.ts
-- [ ] T070 Implement HistoryPage.render() with session list in src/webview/pages/HistoryPage.ts
-- [ ] T071 Add pagination logic (20 sessions per page) in src/services/SessionService.ts
-- [ ] T072 Implement loadSessionList message handler with pagination in src/webview/WebviewProvider.ts
-- [ ] T073 Add inline/modal rename editor to SessionListItem in src/webview/components/SessionListItem.ts
-- [ ] T074 Implement renameSession message handler in src/webview/WebviewProvider.ts
-- [ ] T075 Add delete confirmation dialog in src/webview/pages/HistoryPage.ts
-- [ ] T076 Implement deleteSession with file removal in src/services/SessionService.ts
-- [ ] T077 Add click handler for session title → navigate to Chat in src/webview/pages/HistoryPage.ts
-- [ ] T078 Implement empty state message display in src/webview/pages/HistoryPage.ts
+- [X] T068 [P] Create SessionListItem component with title/timestamp/actions in src/webview/components/SessionListItem.ts
+- [X] T069 [P] Create SessionList component with vertical list layout in src/webview/components/SessionList.ts
+- [X] T070 Implement HistoryPage.render() with session list in src/webview/pages/HistoryPage.ts
+- [X] T071 Add pagination logic (20 sessions per page) in src/services/SessionService.ts
+- [X] T072 Implement loadSessionList message handler with pagination in src/webview/WebviewProvider.ts
+- [X] T073 Add inline/modal rename editor to SessionListItem in src/webview/components/SessionListItem.ts
+- [X] T074 Implement renameSession message handler in src/webview/WebviewProvider.ts
+- [X] T075 Add delete confirmation dialog in src/webview/pages/HistoryPage.ts
+- [X] T076 Implement deleteSession with file removal in src/services/SessionService.ts
+- [X] T077 Add click handler for session title → navigate to Chat in src/webview/pages/HistoryPage.ts
+- [X] T078 Implement empty state message display in src/webview/pages/HistoryPage.ts
 
 **Checkpoint**: All user stories complete - full MVP functionality
 

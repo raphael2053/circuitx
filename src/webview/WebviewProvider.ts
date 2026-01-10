@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import { WebviewMessage, ExtensionMessage, PageType } from '../models/WebviewMessages';
-import { Session } from '../models/Session';
+import { Session, SessionMetadata } from '../models/Session';
 import { SessionService } from '../services/SessionService';
 import { ProviderService } from '../services/ProviderService';
 import { LLMService } from '../services/LLMService';
@@ -13,6 +13,9 @@ import { generateUUID } from '../utils/uuid';
 import { NoProviderConfiguredError } from '../utils/errors';
 import { WelcomePage } from './pages/WelcomePage';
 import { ChatPage } from './pages/ChatPage';
+import { ProvidersPage } from './pages/ProvidersPage';
+import { HistoryPage } from './pages/HistoryPage';
+import { LLMProvider } from '../models/LLMProvider';
 
 /**
  * Internal state for the webview
@@ -23,6 +26,19 @@ interface WebviewState {
 	isLoading: boolean;
 	streamingContent?: string;
 	error?: string;
+	successMessage?: string;
+	// Provider management state
+	providers?: LLMProvider[];
+	defaultProviderId?: string;
+	editingProvider?: LLMProvider;
+	showAddForm?: boolean;
+	testingProviderId?: string;
+	// History page state
+	sessionList?: SessionMetadata[];
+	sessionPage?: number;
+	sessionHasMore?: boolean;
+	sessionTotal?: number;
+	editingSessionId?: string;
 }
 
 export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
@@ -149,6 +165,18 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 				case 'testProvider':
 					await this._handleTestProvider(message);
 					break;
+
+				case 'setDefaultProvider':
+					await this._handleSetDefaultProvider(message);
+					break;
+
+				case 'startEditSession':
+					this._handleStartEditSession(message);
+					break;
+
+				case 'cancelEditSession':
+					this._handleCancelEditSession();
+					break;
 			}
 		} catch (error) {
 			// Send error to webview
@@ -164,7 +192,7 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	 * Navigate to a different page (T033)
 	 */
 	private async _handleNavigate(message: Extract<WebviewMessage, { type: 'navigate' }>): Promise<void> {
-		const { page, sessionId } = message.payload;
+		const { page, sessionId, providerId } = message.payload;
 
 		// Update state based on target page
 		if (page === 'chat' && sessionId) {
@@ -181,6 +209,62 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 				activeSession: undefined,
 				isLoading: false,
 				error: undefined,
+			});
+		} else if (page === 'providers') {
+			// Load providers and navigate to providers page
+			const providers = await this.providerService.listProviders();
+			const defaultProvider = await this.providerService.getDefaultProvider();
+			this._updateState({
+				currentPage: 'providers',
+				providers,
+				defaultProviderId: defaultProvider?.id,
+				editingProvider: undefined,
+				showAddForm: false,
+				isLoading: false,
+				error: undefined,
+				successMessage: undefined,
+			});
+		} else if (page === 'addProvider') {
+			// Show add provider form
+			const providers = await this.providerService.listProviders();
+			const defaultProvider = await this.providerService.getDefaultProvider();
+			this._updateState({
+				currentPage: 'providers',
+				providers,
+				defaultProviderId: defaultProvider?.id,
+				editingProvider: undefined,
+				showAddForm: true,
+				isLoading: false,
+				error: undefined,
+			});
+		} else if (page === 'editProvider' && providerId) {
+			// Show edit provider form
+			const providers = await this.providerService.listProviders();
+			const defaultProvider = await this.providerService.getDefaultProvider();
+			const editingProvider = providers.find(p => p.id === providerId);
+			this._updateState({
+				currentPage: 'providers',
+				providers,
+				defaultProviderId: defaultProvider?.id,
+				editingProvider,
+				showAddForm: false,
+				isLoading: false,
+				error: undefined,
+			});
+		} else if (page === 'history') {
+			// Load session list and navigate to history page (T070, T072)
+			this._updateState({ currentPage: 'history', isLoading: true });
+			const sessions = await this.sessionService.list(0, 20);
+			const hasMore = sessions.length === 20;
+			this._updateState({
+				currentPage: 'history',
+				sessionList: sessions,
+				sessionPage: 0,
+				sessionHasMore: hasMore,
+				editingSessionId: undefined,
+				isLoading: false,
+				error: undefined,
+				successMessage: undefined,
 			});
 		} else {
 			this._updateState({
@@ -378,10 +462,21 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * Delete a session
+	 * Delete a session (T076: FR-021)
 	 */
 	private async _handleDeleteSession(message: Extract<WebviewMessage, { type: 'deleteSession' }>): Promise<void> {
 		await this.sessionService.delete(message.payload.sessionId);
+
+		// If on history page, refresh the list
+		if (this.state.currentPage === 'history') {
+			const sessions = await this.sessionService.list(this.state.sessionPage || 0, 20);
+			const hasMore = sessions.length === 20;
+			this._updateState({
+				sessionList: sessions,
+				sessionHasMore: hasMore,
+				successMessage: 'Session deleted',
+			});
+		}
 
 		this._postMessage({
 			type: 'sessionDeleted',
@@ -393,12 +488,24 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * Rename a session
+	 * Rename a session (T074: FR-019)
 	 */
 	private async _handleRenameSession(message: Extract<WebviewMessage, { type: 'renameSession' }>): Promise<void> {
 		const session = await this.sessionService.update(message.payload.sessionId, {
 			title: message.payload.title,
 		});
+
+		// If on history page, refresh the list and clear edit mode
+		if (this.state.currentPage === 'history') {
+			const sessions = await this.sessionService.list(this.state.sessionPage || 0, 20);
+			const hasMore = sessions.length === 20;
+			this._updateState({
+				sessionList: sessions,
+				sessionHasMore: hasMore,
+				editingSessionId: undefined,
+				successMessage: 'Session renamed',
+			});
+		}
 
 		this._postMessage({
 			type: 'sessionRenamed',
@@ -411,7 +518,25 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * Load session list
+	 * Start editing a session title (T073)
+	 */
+	private _handleStartEditSession(message: { payload: { sessionId: string } }): void {
+		this._updateState({
+			editingSessionId: message.payload.sessionId,
+		});
+	}
+
+	/**
+	 * Cancel editing a session title
+	 */
+	private _handleCancelEditSession(): void {
+		this._updateState({
+			editingSessionId: undefined,
+		});
+	}
+
+	/**
+	 * Load session list (T071, T072: pagination)
 	 */
 	private async _handleLoadSessionList(message: Extract<WebviewMessage, { type: 'loadSessionList' }>): Promise<void> {
 		const page = message.payload?.page ?? 0;
@@ -422,6 +547,13 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 		// TODO: Get total count for hasMore calculation
 		// For now, assume hasMore if we got a full page
 		const hasMore = sessions.length === pageSize;
+
+		// Update state for history page
+		this._updateState({
+			sessionList: sessions,
+			sessionPage: page,
+			sessionHasMore: hasMore,
+		});
 
 		this._postMessage({
 			type: 'sessionListLoaded',
@@ -452,12 +584,24 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * Add a provider
+	 * Add a provider (T055: FR-024, FR-025, FR-026)
 	 */
 	private async _handleAddProvider(message: Extract<WebviewMessage, { type: 'addProvider' }>): Promise<void> {
 		const { name, baseUrl, model, apiKey, isDefault } = message.payload;
 
 		const provider = await this.providerService.addProvider(name, baseUrl, model, apiKey, isDefault);
+
+		// Refresh providers list and navigate back to list view
+		const providers = await this.providerService.listProviders();
+		const defaultProvider = await this.providerService.getDefaultProvider();
+
+		this._updateState({
+			providers,
+			defaultProviderId: defaultProvider?.id,
+			showAddForm: false,
+			editingProvider: undefined,
+			successMessage: `Provider "${provider.name}" added successfully`,
+		});
 
 		this._postMessage({
 			type: 'providerAdded',
@@ -467,12 +611,24 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * Update a provider
+	 * Update a provider (T056: FR-027)
 	 */
 	private async _handleUpdateProvider(message: Extract<WebviewMessage, { type: 'updateProvider' }>): Promise<void> {
 		const { id, ...updates } = message.payload;
 
 		const provider = await this.providerService.updateProvider(id, updates, updates.apiKey);
+
+		// Refresh providers list and navigate back to list view
+		const providers = await this.providerService.listProviders();
+		const defaultProvider = await this.providerService.getDefaultProvider();
+
+		this._updateState({
+			providers,
+			defaultProviderId: defaultProvider?.id,
+			showAddForm: false,
+			editingProvider: undefined,
+			successMessage: `Provider "${provider.name}" updated successfully`,
+		});
 
 		this._postMessage({
 			type: 'providerUpdated',
@@ -482,27 +638,49 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * Delete a provider
+	 * Delete a provider (T058: FR-028, FR-031)
 	 */
 	private async _handleDeleteProvider(message: Extract<WebviewMessage, { type: 'deleteProvider' }>): Promise<void> {
-		await this.providerService.deleteProvider(message.payload.id);
+		const providerId = message.payload.providerId || message.payload.id;
+		if (!providerId) {
+			throw new Error('Provider ID is required');
+		}
+		
+		await this.providerService.deleteProvider(providerId);
+
+		// Refresh providers list
+		const providers = await this.providerService.listProviders();
+		const defaultProvider = await this.providerService.getDefaultProvider();
+
+		this._updateState({
+			providers,
+			defaultProviderId: defaultProvider?.id,
+			successMessage: 'Provider deleted successfully',
+		});
 
 		this._postMessage({
 			type: 'providerDeleted',
 			payload: {
-				id: message.payload.id,
+				id: providerId,
 			},
 			requestId: message.requestId,
 		});
 	}
 
 	/**
-	 * Test a provider connection
+	 * Test a provider connection (T060: FR-026)
 	 */
 	private async _handleTestProvider(message: Extract<WebviewMessage, { type: 'testProvider' }>): Promise<void> {
-		const { id } = message.payload;
-		const provider = await this.providerService.getProvider(id);
-		const apiKey = (await this.providerService.getProviderApiKey(id)) || '';
+		const providerId = message.payload.providerId || message.payload.id;
+		if (!providerId) {
+			throw new Error('Provider ID is required');
+		}
+		
+		const provider = await this.providerService.getProvider(providerId);
+		const apiKey = (await this.providerService.getProviderApiKey(providerId)) || '';
+
+		// Show testing state
+		this._updateState({ testingProviderId: providerId });
 
 		const startTime = Date.now();
 
@@ -530,10 +708,13 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 
 			const latency = Date.now() - startTime;
 
+			// Clear testing state
+			this._updateState({ testingProviderId: undefined });
+
 			this._postMessage({
 				type: 'providerTestResult',
 				payload: {
-					id,
+					id: providerId,
 					success: true,
 					message: 'Connection successful',
 					latency,
@@ -541,16 +722,43 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 				requestId: message.requestId,
 			});
 		} catch (error) {
+			// Clear testing state
+			this._updateState({ testingProviderId: undefined });
+
 			this._postMessage({
 				type: 'providerTestResult',
 				payload: {
-					id,
+					id: providerId,
 					success: false,
 					message: (error as Error).message,
 				},
 				requestId: message.requestId,
 			});
 		}
+	}
+
+	/**
+	 * Set default provider (T059: FR-029)
+	 */
+	private async _handleSetDefaultProvider(message: Extract<WebviewMessage, { type: 'setDefaultProvider' }>): Promise<void> {
+		const providerId = message.payload.providerId;
+
+		await this.providerService.setDefaultProvider(providerId);
+
+		// Refresh state
+		const providers = await this.providerService.listProviders();
+
+		this._updateState({
+			providers,
+			defaultProviderId: providerId,
+			successMessage: 'Default provider updated',
+		});
+
+		this._postMessage({
+			type: 'defaultProviderSet',
+			payload: { providerId },
+			requestId: message.requestId,
+		});
 	}
 
 	/**
@@ -602,6 +810,29 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 						error: this.state.error,
 					});
 				}
+				break;
+			case 'providers':
+				pageContent = ProvidersPage({
+					providers: this.state.providers || [],
+					defaultProviderId: this.state.defaultProviderId,
+					editingProvider: this.state.editingProvider,
+					showAddForm: this.state.showAddForm,
+					testingProviderId: this.state.testingProviderId,
+					error: this.state.error,
+					successMessage: this.state.successMessage,
+				});
+				break;
+			case 'history':
+				pageContent = HistoryPage({
+					sessions: this.state.sessionList || [],
+					page: this.state.sessionPage || 0,
+					hasMore: this.state.sessionHasMore || false,
+					total: this.state.sessionTotal,
+					editingSessionId: this.state.editingSessionId,
+					isLoading: this.state.isLoading,
+					error: this.state.error,
+					successMessage: this.state.successMessage,
+				});
 				break;
 			case 'welcome':
 			default:

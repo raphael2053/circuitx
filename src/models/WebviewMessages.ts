@@ -33,18 +33,21 @@ export interface BaseMessage {
  * Navigation message types
  * - Controls which page is displayed in the webview
  * - PageType: 'welcome' (start), 'chat' (conversation), 'history' (sessions), 'providers' (settings)
+ * - Extended page types: 'addProvider', 'editProvider' (sub-views of providers)
  */
-export type PageType = 'welcome' | 'chat' | 'history' | 'providers';
+export type PageType = 'welcome' | 'chat' | 'history' | 'providers' | 'addProvider' | 'editProvider';
 
 /**
  * Request to navigate to a different page
  * - sessionId required when navigating to 'chat' page
+ * - providerId required when navigating to 'editProvider' page
  */
 export interface NavigateMessage extends BaseMessage {
 	type: 'navigate';
 	payload: {
 		page: PageType;
 		sessionId?: string; // Required when page is 'chat'
+		providerId?: string; // Required when page is 'editProvider'
 	};
 }
 
@@ -164,7 +167,8 @@ export interface UpdateProviderMessage extends BaseMessage {
 export interface DeleteProviderMessage extends BaseMessage {
 	type: 'deleteProvider';
 	payload: {
-		id: string;
+		id?: string;
+		providerId?: string; // Alternative field name from UI
 	};
 	requestId: string;
 }
@@ -173,9 +177,32 @@ export interface DeleteProviderMessage extends BaseMessage {
 export interface TestProviderMessage extends BaseMessage {
 	type: 'testProvider';
 	payload: {
-		id: string;
+		id?: string;
+		providerId?: string; // Alternative field name from UI
 	};
 	requestId: string;
+}
+
+/** Set a provider as the default for new sessions */
+export interface SetDefaultProviderMessage extends BaseMessage {
+	type: 'setDefaultProvider';
+	payload: {
+		providerId: string;
+	};
+	requestId: string;
+}
+
+/** Start editing a session title (History page) */
+export interface StartEditSessionMessage extends BaseMessage {
+	type: 'startEditSession';
+	payload: {
+		sessionId: string;
+	};
+}
+
+/** Cancel editing a session title (History page) */
+export interface CancelEditSessionMessage extends BaseMessage {
+	type: 'cancelEditSession';
 }
 
 /**
@@ -195,7 +222,10 @@ export type WebviewMessage =
 	| AddProviderMessage
 	| UpdateProviderMessage
 	| DeleteProviderMessage
-	| TestProviderMessage;
+	| TestProviderMessage
+	| SetDefaultProviderMessage
+	| StartEditSessionMessage
+	| CancelEditSessionMessage;
 
 /**
  * Extension-to-webview message types
@@ -372,6 +402,15 @@ export interface ProviderTestResultMessage {
 	requestId: string;
 }
 
+/** Default provider set successfully - response to SetDefaultProviderMessage */
+export interface DefaultProviderSetMessage {
+	type: 'defaultProviderSet';
+	payload: {
+		providerId: string;
+	};
+	requestId: string;
+}
+
 /** 
  * Generic error response
  * - Sent when any operation fails
@@ -404,4 +443,5 @@ export type ExtensionMessage =
 	| ProviderUpdatedMessage
 	| ProviderDeletedMessage
 	| ProviderTestResultMessage
+	| DefaultProviderSetMessage
 	| ErrorResponse;
