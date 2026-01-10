@@ -94,9 +94,9 @@ export class InvalidResponseError extends CircuitXError {
  * Timeout error
  */
 export class TimeoutError extends CircuitXError {
-	constructor(seconds: number) {
+	constructor(message?: string) {
 		super(
-			`Request timed out after ${seconds} seconds`,
+			message || 'Request timed out',
 			'TIMEOUT',
 			'The request took too long. Try again or use a different provider.'
 		);
@@ -108,9 +108,9 @@ export class TimeoutError extends CircuitXError {
  * Request cancelled error
  */
 export class RequestCancelledError extends CircuitXError {
-	constructor() {
+	constructor(message?: string) {
 		super(
-			'Request was cancelled by user',
+			message || 'Request was cancelled by user',
 			'CANCELLED',
 			undefined
 		);
@@ -122,9 +122,9 @@ export class RequestCancelledError extends CircuitXError {
  * Validation error
  */
 export class ValidationError extends CircuitXError {
-	constructor(field: string, message: string) {
+	constructor(message: string) {
 		super(
-			`Validation failed for ${field}: ${message}`,
+			message,
 			'VALIDATION_ERROR',
 			'Please correct the highlighted fields and try again.'
 		);

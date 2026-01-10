@@ -40,35 +40,35 @@
 
 ### SessionService (File-based CRUD)
 
-- [ ] T009 Write unit tests for SessionService.create() in src/test/unit/SessionService.test.ts
-- [ ] T010 Write unit tests for SessionService.load(), update(), delete(), list() in src/test/unit/SessionService.test.ts
-- [ ] T011 Implement SessionService with file system operations using vscode.workspace.fs in src/services/SessionService.ts
+- [X] T009 Write unit tests for SessionService.create() in src/test/unit/SessionService.test.ts
+- [X] T010 Write unit tests for SessionService.load(), update(), delete(), list() in src/test/unit/SessionService.test.ts
+- [X] T011 Implement SessionService with file system operations using vscode.workspace.fs in src/services/SessionService.ts
 
 ### ProviderService (Settings + SecretStorage)
 
-- [ ] T012 Write unit tests for ProviderService CRUD operations in src/test/unit/ProviderService.test.ts
-- [ ] T013 Write unit tests for API key storage/retrieval in src/test/unit/ProviderService.test.ts
-- [ ] T014 Implement ProviderService with vscode.workspace.getConfiguration() and context.secrets in src/services/ProviderService.ts
+- [X] T012 Write unit tests for ProviderService CRUD operations in src/test/unit/ProviderService.test.ts
+- [X] T013 Write unit tests for API key storage/retrieval in src/test/unit/ProviderService.test.ts
+- [X] T014 Implement ProviderService with vscode.workspace.getConfiguration() and context.secrets in src/services/ProviderService.ts
 
 ### LLMService (OpenAI-compatible streaming)
 
-- [ ] T015 Write unit tests for LLMService.sendMessage() with mock fetch in src/test/unit/LLMService.test.ts
-- [ ] T016 Write unit tests for SSE stream parsing in src/test/unit/LLMService.test.ts
-- [ ] T017 Implement LLMService with fetch() and SSE parsing in src/services/LLMService.ts
+- [X] T015 Write unit tests for LLMService.sendMessage() with mock fetch in src/test/unit/LLMService.test.ts
+- [X] T016 Write unit tests for SSE stream parsing in src/test/unit/LLMService.test.ts
+- [X] T017 Implement LLMService with fetch() and SSE parsing in src/services/LLMService.ts
 
 ### WebviewViewProvider (Extension host)
 
-- [ ] T018 Write contract tests for webview postMessage protocol in src/test/contract/webview-messaging.test.ts
-- [ ] T019 Create base WebviewViewProvider class with resolveWebviewView() in src/webview/WebviewProvider.ts
-- [ ] T020 Implement message routing for webview-to-extension messages in src/webview/WebviewProvider.ts
-- [ ] T021 Add webview HTML generation with CSP and nonce in src/webview/WebviewProvider.ts
-- [ ] T022 Register WebviewViewProvider in extension.ts activate() function
+- [X] T018 Write contract tests for webview postMessage protocol in src/test/contract/webview-messaging.test.ts
+- [X] T019 Create base WebviewViewProvider class with resolveWebviewView() in src/webview/WebviewProvider.ts
+- [X] T020 Implement message routing for webview-to-extension messages in src/webview/WebviewProvider.ts
+- [X] T021 Add webview HTML generation with CSP and nonce in src/webview/WebviewProvider.ts
+- [X] T022 Register WebviewViewProvider in extension.ts activate() function
 
 ### Shared UI Components (Pure TypeScript DOM)
 
-- [ ] T023 [P] Create Toolbar component returning HTML string with ➕🕒⚙️ buttons in src/webview/components/Toolbar.ts
-- [ ] T024 [P] Create InputBox component with event handling in src/webview/components/InputBox.ts
-- [ ] T025 [P] Create Button component with VS Code styling in src/webview/components/Button.ts
+- [X] T023 [P] Create Toolbar component returning HTML string with ➕🕒⚙️ buttons in src/webview/components/Toolbar.ts
+- [X] T024 [P] Create InputBox component with event handling in src/webview/components/InputBox.ts
+- [X] T025 [P] Create Button component with VS Code styling in src/webview/components/Button.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -86,17 +86,17 @@
 
 ### Tests First (Write these before implementation)
 
-- [ ] T026 Write integration test: Welcome page displays on first activation in src/test/integration/welcome.test.ts
-- [ ] T027 Write integration test: Session created when question submitted from Welcome in src/test/integration/session-creation.test.ts
-- [ ] T028 Write integration test: Navigation to Chat page after session creation in src/test/integration/session-creation.test.ts
+- [X] T026 Write integration test: Welcome page displays on first activation in src/test/integration/welcome.test.ts
+- [X] T027 Write integration test: Session created when question submitted from Welcome in src/test/integration/session-creation.test.ts
+- [X] T028 Write integration test: Navigation to Chat page after session creation in src/test/integration/session-creation.test.ts
 
 ### Implementation (Only after tests are written and failing)
 
-- [ ] T029 Implement WelcomePage.render() with input box and branding in src/webview/pages/WelcomePage.ts
-- [ ] T030 Add page state management and routing logic in src/webview/WebviewProvider.ts
-- [ ] T031 Implement sendMessage handler for Welcome page submissions in src/webview/WebviewProvider.ts
-- [ ] T032 Add session title auto-generation from first 30 chars in src/services/SessionService.ts
-- [ ] T033 Implement Welcome → Chat navigation transition in src/webview/WebviewProvider.ts
+- [X] T029 Implement WelcomePage.render() with input box and branding in src/webview/pages/WelcomePage.ts
+- [X] T030 Add page state management and routing logic in src/webview/WebviewProvider.ts
+- [X] T031 Implement sendMessage handler for Welcome page submissions in src/webview/WebviewProvider.ts
+- [X] T032 Add session title auto-generation from first 30 chars in src/services/SessionService.ts
+- [X] T033 Implement Welcome → Chat navigation transition in src/webview/WebviewProvider.ts
 
 **Checkpoint**: User Story 1 complete - user can ask first question and session is created
 
