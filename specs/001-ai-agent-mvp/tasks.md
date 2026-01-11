@@ -223,36 +223,36 @@
 
 ### Performance & Reliability (NFRs from spec.md)
 
-- [ ] T079 [P] Implement webview state persistence for VS Code restart recovery in src/webview/WebviewProvider.ts
-- [ ] T080 [P] Add retry logic: single retry with 2-second delay (FR-042) in src/services/LLMService.ts
-- [ ] T081 [P] Implement 30-second timeout for LLM API calls (FR-044) in src/services/LLMService.ts
-- [ ] T082 [P] Add AbortController for canceling ongoing requests in src/services/LLMService.ts
-- [ ] T083 [P] Create actionable error messages with suggested actions (FR-043, FR-046) in src/utils/errors.ts
-- [ ] T084 [P] Add extension activation time measurement (<1s target) in src/extension.ts
+- [X] T079 [P] Implement webview state persistence for VS Code restart recovery in src/webview/WebviewProvider.ts
+- [X] T080 [P] Add retry logic: single retry with 2-second delay (FR-042) in src/services/LLMService.ts
+- [X] T081 [P] Implement 30-second timeout for LLM API calls (FR-044) in src/services/LLMService.ts
+- [X] T082 [P] Add AbortController for canceling ongoing requests in src/services/LLMService.ts
+- [X] T083 [P] Create actionable error messages with suggested actions (FR-043, FR-046) in src/utils/errors.ts
+- [X] T084 [P] Add extension activation time measurement (<1s target) in src/extension.ts
 
 ### Code Quality & Testing
 
-- [ ] T085 Run ESLint across all source files and fix violations
-- [ ] T086 Verify TypeScript strict mode compliance, no `any` types except VS Code API boundaries
-- [ ] T087 Code review: check Single Responsibility Principle for all services/components
-- [ ] T088 Calculate test coverage, ensure >80% for core logic (SessionService, ProviderService, LLMService)
-- [ ] T089 Add missing edge case tests from spec.md (network failures, concurrent deletion, etc.)
+- [X] T085 Run ESLint across all source files and fix violations
+- [X] T086 Verify TypeScript strict mode compliance, no `any` types except VS Code API boundaries
+- [X] T087 Code review: check Single Responsibility Principle for all services/components
+- [X] T088 Calculate test coverage, ensure >80% for core logic (SessionService, ProviderService, LLMService)
+- [X] T089 Add missing edge case tests from spec.md (network failures, concurrent deletion, etc.)
 
 ### Performance Validation
 
-- [ ] T090 Measure extension activation time with 100 cached sessions (<1s target)
-- [ ] T091 Test Session History page with 1000+ sessions (<2s load, no lag)
-- [ ] T092 Verify memory footprint during idle with 100 sessions (<200MB target)
-- [ ] T093 Test UI responsiveness: button clicks, navigation (<100ms target)
-- [ ] T094 Load test: create 500 sessions, verify file operations stay async
+- [X] T090 Measure extension activation time with 100 cached sessions (<1s target)
+- [X] T091 Test Session History page with 1000+ sessions (<2s load, no lag)
+- [X] T092 Verify memory footprint during idle with 100 sessions (<200MB target)
+- [X] T093 Test UI responsiveness: button clicks, navigation (<100ms target)
+- [X] T094 Load test: create 500 sessions, verify file operations stay async
 
 ### Documentation & Finalization
 
-- [ ] T095 [P] Update quickstart.md with actual implementation patterns
-- [ ] T096 [P] Add JSDoc comments to all public APIs
-- [ ] T097 [P] Create README.md with setup and usage instructions
-- [ ] T098 Run through quickstart.md step-by-step, verify accuracy
-- [ ] T099 Final review: check all FRs (FR-001 to FR-046) are implemented
+- [X] T095 [P] Update quickstart.md with actual implementation patterns
+- [X] T096 [P] Add JSDoc comments to all public APIs
+- [X] T097 [P] Create README.md with setup and usage instructions
+- [X] T098 Run through quickstart.md step-by-step, verify accuracy
+- [X] T099 Final review: check all FRs (FR-001 to FR-046) are implemented
 - [ ] T100 Create demo: record video showing all 4 user stories working end-to-end
 
 **Final Checkpoint**: Feature complete, all tests passing, performance targets met, ready for deployment

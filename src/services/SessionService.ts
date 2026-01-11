@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { Session, Message, generateSessionTitle } from '../models/Session';
 import { generateUUID } from '../utils/uuid';
-import { SessionNotFoundError } from '../utils/errors';
+import { SessionNotFoundError, isFileSystemError } from '../utils/errors';
 
 export class SessionService {
 	constructor(private context: vscode.ExtensionContext) {}
@@ -40,6 +40,9 @@ export class SessionService {
 
 	/**
 	 * Create a new session with an initial message
+	 * @param providerId - Optional provider ID for the session (uses default if not set)
+	 * @param firstMessage - The initial user message to start the conversation
+	 * @returns The created session with generated ID and title
 	 */
 	async create(providerId: string | undefined, firstMessage: Message): Promise<Session> {
 		await this.ensureSessionsDir();
@@ -64,6 +67,9 @@ export class SessionService {
 
 	/**
 	 * Load a session by ID
+	 * @param sessionId - The unique session identifier
+	 * @returns The loaded session
+	 * @throws {SessionNotFoundError} If session doesn't exist
 	 */
 	async load(sessionId: string): Promise<Session> {
 		const sessionPath = this.getSessionPath(sessionId);
@@ -73,7 +79,7 @@ export class SessionService {
 			const session = JSON.parse(Buffer.from(content).toString('utf8')) as Session;
 			return session;
 		} catch (error) {
-			if ((error as any).code === 'FileNotFound') {
+			if (isFileSystemError(error, 'FileNotFound')) {
 				throw new SessionNotFoundError(sessionId);
 			}
 			throw error;
@@ -112,7 +118,7 @@ export class SessionService {
 		try {
 			await vscode.workspace.fs.delete(sessionPath);
 		} catch (error) {
-			if ((error as any).code === 'FileNotFound') {
+			if (isFileSystemError(error, 'FileNotFound')) {
 				throw new SessionNotFoundError(sessionId);
 			}
 			throw error;
@@ -162,7 +168,7 @@ export class SessionService {
 			const end = start + pageSize;
 			return validSessions.slice(start, end);
 		} catch (error) {
-			if ((error as any).code === 'FileNotFound') {
+			if (isFileSystemError(error, 'FileNotFound')) {
 				return [];
 			}
 			throw error;

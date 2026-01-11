@@ -4,6 +4,38 @@
  */
 
 /**
+ * Type guard for VS Code FileSystemError
+ * Used to check for file not found errors without using 'any' type
+ */
+export interface VSCodeFileSystemError extends Error {
+	code: string;
+}
+
+/**
+ * Check if an error is a VS Code file system error with a specific code
+ */
+export function isFileSystemError(error: unknown, code: string): boolean {
+	return (
+		error !== null &&
+		typeof error === 'object' &&
+		'code' in error &&
+		(error as VSCodeFileSystemError).code === code
+	);
+}
+
+/**
+ * Check if error is an AbortError from fetch API
+ */
+export function isAbortError(error: unknown): boolean {
+	return (
+		error !== null &&
+		typeof error === 'object' &&
+		'name' in error &&
+		(error as Error).name === 'AbortError'
+	);
+}
+
+/**
  * Base error class for CircuitX errors
  */
 export class CircuitXError extends Error {

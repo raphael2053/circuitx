@@ -85,6 +85,9 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	) {
 		this._view = webviewView;
 
+		// T079: Restore webview state from previous session
+		await this._restoreState(context);
+
 		// Configure webview
 		webviewView.webview.options = {
 			enableScripts: true,
@@ -97,6 +100,16 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 		// Handle messages from webview
 		webviewView.webview.onDidReceiveMessage(async (message: WebviewMessage) => {
 			await this._handleMessage(message);
+		});
+
+		// T079: Persist webview state when visibility changes
+		webviewView.onDidChangeVisibility(() => {
+			this._saveState();
+		});
+
+		// T079: Persist state when webview is disposed
+		webviewView.onDidDispose(() => {
+			this._saveState();
 		});
 
 		// Send initial state
@@ -830,11 +843,64 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
+	 * T079: Save webview state for VS Code restart recovery
+	 * Persists the current page and active session ID to workspace state
+	 */
+	private _saveState(): void {
+		const persistedState = {
+			currentPage: this.state.currentPage,
+			activeSessionId: this.state.activeSession?.id,
+		};
+		this.context.workspaceState.update('circuitx.webviewState', persistedState);
+	}
+
+	/**
+	 * T079: Restore webview state from previous session
+	 * Recovers the page and reloads the active session if available
+	 */
+	private async _restoreState(context: vscode.WebviewViewResolveContext): Promise<void> {
+		const persistedState = this.context.workspaceState.get<{
+			currentPage: PageType;
+			activeSessionId?: string;
+		}>('circuitx.webviewState');
+
+		if (persistedState) {
+			this.state.currentPage = persistedState.currentPage;
+
+			// Restore active session if it was on the chat page
+			if (persistedState.activeSessionId && persistedState.currentPage === 'chat') {
+				try {
+					const session = await this.sessionService.load(persistedState.activeSessionId);
+					this.state.activeSession = session;
+				} catch {
+					// Session may have been deleted - fallback to welcome
+					this.state.currentPage = 'welcome';
+				}
+			}
+
+			// Preload data for non-chat pages
+			if (persistedState.currentPage === 'providers') {
+				const providers = await this.providerService.listProviders();
+				const defaultProvider = await this.providerService.getDefaultProvider();
+				this.state.providers = providers;
+				this.state.defaultProviderId = defaultProvider?.id;
+			} else if (persistedState.currentPage === 'history') {
+				const sessions = await this.sessionService.list(0, 20);
+				this.state.sessionList = sessions;
+				this.state.sessionPage = 0;
+				this.state.sessionHasMore = sessions.length === 20;
+			}
+		}
+	}
+
+	/**
 	 * Update state and re-render webview
 	 */
 	private _updateState(updates: Partial<WebviewState>): void {
 		this.state = { ...this.state, ...updates };
 		this._render();
+		// T079: Auto-save state on updates
+		this._saveState();
 	}
 
 	/**

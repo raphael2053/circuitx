@@ -49,26 +49,40 @@ src/
 │   │   ├── HistoryPage.ts    # Session history page
 │   │   └── ProvidersPage.ts  # Provider management page
 │   ├── components/
+│   │   ├── Toolbar.ts        # Navigation toolbar (➕🕒⚙️)
 │   │   ├── MessageList.ts    # Chat message rendering
 │   │   ├── InputBox.ts       # Message input component
-│   │   └── Button.ts         # Reusable button component
+│   │   ├── Button.ts         # Reusable button component
+│   │   ├── SessionList.ts    # History session list
+│   │   ├── SessionListItem.ts # Individual session item
+│   │   ├── ProviderTable.ts  # Provider list table
+│   │   └── ProviderForm.ts   # Provider add/edit form
 │   └── styles/
 │       └── main.css          # Webview styles (VS Code variables)
 ├── services/
-│   ├── SessionService.ts     # Session CRUD operations
-│   ├── ProviderService.ts    # Provider management
-│   ├── LLMService.ts         # LLM API communication
-│   └── StorageService.ts     # File system operations
+│   ├── SessionService.ts     # Session CRUD with file system
+│   ├── ProviderService.ts    # Provider config + API key storage
+│   └── LLMService.ts         # LLM API communication with streaming
 ├── models/
 │   ├── Session.ts            # Session interface & validation
-│   ├── Message.ts            # Message interface
-│   └── Provider.ts           # LLMProvider interface
+│   ├── LLMProvider.ts        # LLMProvider interface
+│   └── WebviewMessages.ts    # Message protocol types
+├── utils/
+│   ├── uuid.ts               # UUID generation
+│   └── errors.ts             # Custom error types with actions
 └── test/
-    ├── extension.test.ts     # Integration tests
-    └── unit/
-        ├── SessionService.test.ts
-        ├── ProviderService.test.ts
-        └── LLMService.test.ts
+    ├── extension.test.ts     # Extension activation tests
+    ├── unit/
+    │   ├── SessionService.test.ts
+    │   ├── ProviderService.test.ts
+    │   └── LLMService.test.ts
+    ├── integration/
+    │   ├── welcome.test.ts
+    │   ├── session-creation.test.ts
+    │   ├── chat-streaming.test.ts
+    │   └── ...
+    └── contract/
+        └── webview-messaging.test.ts
 ```
 
 ---
@@ -80,17 +94,22 @@ Entry point. Registers the webview provider:
 
 ```typescript
 import * as vscode from 'vscode';
-import { WebviewProvider } from './webview/WebviewProvider';
+import { CircuitXWebviewProvider } from './webview/WebviewProvider';
 
 export function activate(context: vscode.ExtensionContext) {
-  const provider = new WebviewProvider(context);
+  // Measure activation time (<1s target)
+  const activationStart = performance.now();
+  
+  const provider = new CircuitXWebviewProvider(context, context.extensionUri);
   
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
-      'circuitx.chatView',
+      CircuitXWebviewProvider.viewType,  // 'circuitx.chatView'
       provider
     )
   );
+  
+  console.log(`CircuitX activation: ${(performance.now() - activationStart).toFixed(2)}ms`);
 }
 ```
 

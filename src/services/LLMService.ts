@@ -5,7 +5,7 @@
 
 import { LLMProvider } from '../models/LLMProvider';
 import { Message } from '../models/Session';
-import { ConnectionFailedError, TimeoutError, RequestCancelledError, InvalidResponseError } from '../utils/errors';
+import { ConnectionFailedError, TimeoutError, RequestCancelledError, InvalidResponseError, isAbortError } from '../utils/errors';
 
 export class LLMService {
 	private readonly DEFAULT_TIMEOUT = 30000; // 30 seconds
@@ -126,7 +126,7 @@ export class LLMService {
 		} catch (error) {
 			clearTimeout(timeoutId);
 
-			if ((error as any).name === 'AbortError') {
+			if (isAbortError(error)) {
 				// Check if it was a timeout or manual cancellation
 				if (controller.signal.aborted) {
 					// Could be timeout or manual abort
