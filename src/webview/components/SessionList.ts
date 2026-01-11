@@ -9,7 +9,7 @@
  */
 
 import { SessionMetadata } from '../../models/Session';
-import { SessionListItem, SessionListItemScript } from './SessionListItem';
+import { SessionListItem } from './SessionListItem';
 
 export interface SessionListProps {
 	/** List of session metadata */
@@ -96,60 +96,5 @@ function renderPagination(page: number, hasMore: boolean, total?: number): strin
 				Next →
 			</button>
 		</div>
-	`;
-}
-
-/**
- * Generate script for session list interactions
- */
-export function SessionListScript(): string {
-	return `
-		${SessionListItemScript()}
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				
-				// Pagination button handlers
-				document.addEventListener('click', (e) => {
-					const target = e.target.closest('[data-action]');
-					if (!target) return;
-					
-					const action = target.dataset.action;
-					
-					switch (action) {
-						case 'prevPage':
-							vscode.postMessage({
-								type: 'loadSessionList',
-								payload: { 
-									page: Math.max(0, getCurrentPage() - 1),
-									pageSize: 20 
-								},
-								requestId: crypto.randomUUID()
-							});
-							break;
-							
-						case 'nextPage':
-							vscode.postMessage({
-								type: 'loadSessionList',
-								payload: { 
-									page: getCurrentPage() + 1,
-									pageSize: 20 
-								},
-								requestId: crypto.randomUUID()
-							});
-							break;
-					}
-				});
-				
-				function getCurrentPage() {
-					const pageInfo = document.querySelector('.pagination-info');
-					if (pageInfo) {
-						const match = pageInfo.textContent.match(/Page (\\d+)/);
-						return match ? parseInt(match[1], 10) - 1 : 0;
-					}
-					return 0;
-				}
-			})();
-		</script>
 	`;
 }

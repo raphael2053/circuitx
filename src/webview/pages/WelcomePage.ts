@@ -78,42 +78,6 @@ export function WelcomePage(props: WelcomePageProps = {}): string {
 				</div>
 			</div>
 		</div>
-		
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				const input = document.getElementById('welcome-input');
-				const sendBtn = document.getElementById('welcome-send-btn');
-				
-				// Handle send button click
-				sendBtn?.addEventListener('click', () => {
-					sendMessage();
-				});
-				
-				// Handle Enter key (Shift+Enter for new line)
-				input?.addEventListener('keydown', (e) => {
-					if (e.key === 'Enter' && !e.shiftKey) {
-						e.preventDefault();
-						sendMessage();
-					}
-				});
-				
-				function sendMessage() {
-					const content = input?.value?.trim();
-					if (content) {
-						vscode.postMessage({
-							type: 'sendMessage',
-							payload: { content },
-							requestId: crypto.randomUUID()
-						});
-						// Don't clear input - let the extension handle state
-					}
-				}
-				
-				// Focus input on page load
-				input?.focus();
-			})();
-		</script>
 	`;
 }
 

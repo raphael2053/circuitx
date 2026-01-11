@@ -18,8 +18,8 @@
  */
 
 import { Toolbar } from '../components/Toolbar';
-import { ProviderTable, ProviderTableScript } from '../components/ProviderTable';
-import { ProviderForm, ProviderFormScript } from '../components/ProviderForm';
+import { ProviderTable } from '../components/ProviderTable';
+import { ProviderForm } from '../components/ProviderForm';
 import { LLMProvider } from '../../models/LLMProvider';
 
 export interface ProvidersPageProps {
@@ -63,14 +63,14 @@ export function ProvidersPage(props: ProvidersPageProps): string {
 			<div class="providers-header">
 				<h2 class="providers-title">LLM Providers</h2>
 				${!showForm ? `
-				<button id="add-provider-btn" class="btn btn-primary">
+				<button id="add-provider-btn" class="btn btn-primary" data-action="navigate" data-page="addProvider">
 					<span class="btn-icon">➕</span> Add Provider
 				</button>
 				` : ''}
 			</div>
 			
 			${successMessage ? `
-				<div class="success-message" id="success-message">
+				<div class="success-message" id="success-message" data-auto-dismiss="3000">
 					<span class="success-icon">✓</span>
 					${escapeHtml(successMessage)}
 				</div>
@@ -112,45 +112,6 @@ export function ProvidersPage(props: ProvidersPageProps): string {
 			</div>
 			` : ''}
 		</div>
-		
-		${showForm 
-			? ProviderFormScript(!!editingProvider)
-			: `
-				${ProviderTableScript()}
-				${ProvidersPageScript()}
-			`
-		}
-	`;
-}
-
-/**
- * Generate script for providers page actions
- */
-function ProvidersPageScript(): string {
-	return `
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				
-				// Handle Add Provider button
-				const addBtn = document.getElementById('add-provider-btn');
-				addBtn?.addEventListener('click', () => {
-					vscode.postMessage({
-						type: 'navigate',
-						payload: { page: 'addProvider' }
-					});
-				});
-				
-				// Auto-hide success message after 3 seconds
-				const successMsg = document.getElementById('success-message');
-				if (successMsg) {
-					setTimeout(() => {
-						successMsg.style.opacity = '0';
-						setTimeout(() => successMsg.remove(), 300);
-					}, 3000);
-				}
-			})();
-		</script>
 	`;
 }
 

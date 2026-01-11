@@ -18,7 +18,7 @@
  */
 
 import { Toolbar } from '../components/Toolbar';
-import { MessageList, MessageListScript } from '../components/MessageList';
+import { MessageList } from '../components/MessageList';
 import { Session } from '../../models/Session';
 
 export interface ChatPageProps {
@@ -35,7 +35,7 @@ export function ChatPage(props: ChatPageProps): string {
 	const { session, isLoading = false, streamingContent, error } = props;
 
 	return `
-		<div class="page chat-page">
+		<div class="page chat-page" data-session-id="${session.id}">
 			${Toolbar({})}
 			
 			<div class="chat-header">
@@ -67,61 +67,6 @@ export function ChatPage(props: ChatPageProps): string {
 				</div>
 			</div>
 		</div>
-		
-		${MessageListScript()}
-		
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				const input = document.getElementById('chat-input');
-				const sendBtn = document.getElementById('chat-send-btn');
-				const cancelBtn = document.getElementById('chat-cancel-btn');
-				const messagesContainer = document.getElementById('chat-messages');
-				
-				// Scroll to bottom on load
-				messagesContainer?.scrollTo(0, messagesContainer.scrollHeight);
-				
-				// Handle send button click
-				sendBtn?.addEventListener('click', () => {
-					sendMessage();
-				});
-				
-				// Handle cancel button click
-				cancelBtn?.addEventListener('click', () => {
-					vscode.postMessage({
-						type: 'cancelMessage',
-						payload: { sessionId: '${session.id}' },
-						requestId: crypto.randomUUID()
-					});
-				});
-				
-				// Handle Enter key (Shift+Enter for new line)
-				input?.addEventListener('keydown', (e) => {
-					if (e.key === 'Enter' && !e.shiftKey) {
-						e.preventDefault();
-						sendMessage();
-					}
-				});
-				
-				function sendMessage() {
-					const content = input?.value?.trim();
-					if (content) {
-						vscode.postMessage({
-							type: 'sendMessage',
-							payload: { 
-								sessionId: '${session.id}',
-								content 
-							},
-							requestId: crypto.randomUUID()
-						});
-						input.value = '';
-					}
-				}
-				
-				// Focus input on page load
-				input?.focus();
-			})();
-		</script>
 	`;
 }
 

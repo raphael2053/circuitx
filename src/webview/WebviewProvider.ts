@@ -134,6 +134,10 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 					await this._handleLoadSession(message);
 					break;
 
+				case 'confirmDeleteSession':
+					await this._handleConfirmDeleteSession(message);
+					break;
+
 				case 'deleteSession':
 					await this._handleDeleteSession(message);
 					break;
@@ -156,6 +160,10 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 
 				case 'updateProvider':
 					await this._handleUpdateProvider(message);
+					break;
+
+				case 'confirmDeleteProvider':
+					await this._handleConfirmDeleteProvider(message);
 					break;
 
 				case 'deleteProvider':
@@ -281,15 +289,12 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 	private async _handleSendMessage(message: Extract<WebviewMessage, { type: 'sendMessage' }>): Promise<void> {
 		const { sessionId, content } = message.payload;
 
-		// FR-007: Show loading state within 100ms
-		this._updateState({ isLoading: true, error: undefined });
-
 		// Get default provider (T045: FR-045 error handling)
 		const provider = await this.providerService.getDefaultProvider();
 		if (!provider) {
 			// FR-045: Helpful error when no default provider is configured
 			const errorMessage = 'No LLM provider configured. Please set up a provider in Settings (⚙️).';
-			this._updateState({ isLoading: false, error: errorMessage });
+			this.state = { ...this.state, isLoading: false, error: errorMessage };
 			
 			// Post error to webview
 			this._postMessage({
@@ -308,11 +313,38 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 
 		// Load or create session
 		let session;
+		let userMessage;
+		
 		if (sessionId) {
+			// EXISTING SESSION: Load and add user message incrementally (no re-render)
 			session = await this.sessionService.load(sessionId);
+			
+			userMessage = {
+				id: generateUUID(),
+				role: 'user' as const,
+				content,
+				timestamp: new Date().toISOString(),
+			};
+
+			session = await this.sessionService.update(sessionId, {
+				messages: [...session.messages, userMessage],
+			});
+			
+			// Update internal state without re-render
+			this.state = { ...this.state, isLoading: true, error: undefined, activeSession: session };
+			
+			// Send incremental update to webview (no full re-render)
+			this._postMessage({
+				type: 'chatStarted',
+				payload: {
+					sessionId: session.id,
+					userMessage,
+				},
+				requestId: message.requestId,
+			});
 		} else {
-			// T031: Create new session from Welcome page (FR-004, FR-005)
-			const userMessage = {
+			// NEW SESSION: Create new session from Welcome page (T031: FR-004, FR-005)
+			userMessage = {
 				id: generateUUID(),
 				role: 'user' as const,
 				content,
@@ -321,7 +353,7 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 
 			session = await this.sessionService.create(provider.id, userMessage);
 
-			// T033: Navigate from Welcome to Chat page
+			// T033: Navigate from Welcome to Chat page - this DOES need re-render
 			this._updateState({
 				currentPage: 'chat',
 				activeSession: session,
@@ -337,20 +369,6 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 			});
 		}
 
-		// Add user message to existing session if needed
-		if (sessionId) {
-			const userMessage = {
-				id: generateUUID(),
-				role: 'user' as const,
-				content,
-				timestamp: new Date().toISOString(),
-			};
-
-			session = await this.sessionService.update(sessionId, {
-				messages: [...session.messages, userMessage],
-			});
-		}
-
 		// Create assistant message placeholder
 		const assistantMessageId = generateUUID();
 		let assistantContent = '';
@@ -361,9 +379,9 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 			apiKey,
 			session.messages,
 			(chunk) => {
-				// Handle streaming chunk - update state for re-render
+				// Handle streaming chunk - send to webview for incremental update (no re-render)
 				assistantContent += chunk;
-				this._updateState({ streamingContent: assistantContent });
+				// Don't call _updateState here - it causes full re-render and scroll reset
 				this._postMessage({
 					type: 'chatChunk',
 					payload: {
@@ -375,8 +393,8 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 				});
 			},
 			(error) => {
-				// Handle error - update state and notify webview
-				this._updateState({ isLoading: false, error: error.message, streamingContent: undefined });
+				// Handle error - update internal state but don't re-render (webview handles display)
+				this.state = { ...this.state, isLoading: false, error: error.message, streamingContent: undefined };
 				this._postMessage({
 					type: 'chatError',
 					payload: {
@@ -401,12 +419,13 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 					messages: [...session!.messages, assistantMessage],
 				});
 
-				// Update state with completed session
-				this._updateState({
+				// Update state without re-render (webview handles the completed message)
+				this.state = {
+					...this.state,
 					isLoading: false,
 					streamingContent: undefined,
 					activeSession: updatedSession,
-				});
+				};
 
 				this._postMessage({
 					type: 'chatComplete',
@@ -459,6 +478,27 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 			},
 			requestId: message.requestId,
 		});
+	}
+
+	/**
+	 * Confirm and delete a session (shows VS Code native dialog)
+	 */
+	private async _handleConfirmDeleteSession(message: { payload: { sessionId: string; sessionTitle: string }; requestId?: string }): Promise<void> {
+		const { sessionId, sessionTitle } = message.payload;
+		
+		const result = await vscode.window.showWarningMessage(
+			`Delete session "${sessionTitle}"?\n\nThis cannot be undone.`,
+			{ modal: true },
+			'Delete'
+		);
+		
+		if (result === 'Delete') {
+			await this._handleDeleteSession({
+				type: 'deleteSession',
+				payload: { sessionId },
+				requestId: message.requestId,
+			});
+		}
 	}
 
 	/**
@@ -635,6 +675,27 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 			payload: provider,
 			requestId: message.requestId,
 		});
+	}
+
+	/**
+	 * Confirm and delete a provider (shows VS Code native dialog)
+	 */
+	private async _handleConfirmDeleteProvider(message: { payload: { providerId: string; providerName: string }; requestId?: string }): Promise<void> {
+		const { providerId, providerName } = message.payload;
+		
+		const result = await vscode.window.showWarningMessage(
+			`Delete provider "${providerName}"?\n\nThis cannot be undone.`,
+			{ modal: true },
+			'Delete'
+		);
+		
+		if (result === 'Delete') {
+			await this._handleDeleteProvider({
+				type: 'deleteProvider',
+				payload: { providerId },
+				requestId: message.requestId,
+			});
+		}
 	}
 
 	/**
@@ -858,10 +919,492 @@ export class CircuitXWebviewProvider implements vscode.WebviewViewProvider {
 		// Global vscode API for all pages
 		const vscode = acquireVsCodeApi();
 		
-		// Handle messages from extension
+		// Handle messages from extension (incremental updates for streaming)
 		window.addEventListener('message', event => {
 			const message = event.data;
-			console.log('Received message:', message.type);
+			console.log('[CircuitX] Received message:', message.type, message);
+			
+			switch (message.type) {
+				case 'chatChunk': {
+					// Incrementally update streaming content without full re-render
+					let streamingEl = document.getElementById('streaming-message');
+					const messageList = document.getElementById('message-list');
+					
+					if (!streamingEl && messageList) {
+						// Create streaming message element if it doesn't exist
+						const wrapper = document.createElement('div');
+						wrapper.innerHTML = \`
+							<div class="message assistant-message" id="streaming-message">
+								<div class="message-avatar">🤖</div>
+								<div class="message-content">
+									<div class="message-text" id="streaming-text"></div>
+								</div>
+							</div>
+						\`;
+						messageList.appendChild(wrapper.firstElementChild);
+						streamingEl = document.getElementById('streaming-message');
+					}
+					
+					const textEl = document.getElementById('streaming-text');
+					if (textEl) {
+						textEl.textContent = (textEl.textContent || '') + message.payload.content;
+					}
+					
+					// Auto-scroll to bottom
+					if (messageList) {
+						messageList.scrollTop = messageList.scrollHeight;
+					}
+					break;
+				}
+				
+				case 'chatComplete': {
+					// Mark streaming as complete
+					const streamingEl = document.getElementById('streaming-message');
+					if (streamingEl) {
+						streamingEl.removeAttribute('id');
+						// Add timestamp
+						const contentDiv = streamingEl.querySelector('.message-content');
+						if (contentDiv) {
+							const timestamp = document.createElement('div');
+							timestamp.className = 'message-timestamp';
+							timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+							contentDiv.appendChild(timestamp);
+						}
+					}
+					
+					// Remove streaming indicator from streaming text
+					const streamingText = document.getElementById('streaming-text');
+					if (streamingText) {
+						streamingText.removeAttribute('id');
+					}
+					
+					// Hide loading indicator
+					const loadingIndicator = document.querySelector('.loading-indicator');
+					if (loadingIndicator) {
+						loadingIndicator.style.display = 'none';
+					}
+					
+					// Enable input
+					const chatInput = document.getElementById('chat-input');
+					const sendBtn = document.getElementById('chat-send-btn');
+					const cancelBtn = document.getElementById('chat-cancel-btn');
+					if (chatInput) chatInput.disabled = false;
+					if (sendBtn) sendBtn.style.display = '';
+					if (cancelBtn) cancelBtn.style.display = 'none';
+					
+					// Auto-scroll to bottom
+					const messageList = document.getElementById('message-list');
+					if (messageList) {
+						messageList.scrollTop = messageList.scrollHeight;
+					}
+					break;
+				}
+				
+				case 'chatError': {
+					// Display error
+					const streamingEl = document.getElementById('streaming-message');
+					if (streamingEl) {
+						streamingEl.remove();
+					}
+					
+					const messageList = document.getElementById('message-list');
+					if (messageList) {
+						const errorEl = document.createElement('div');
+						errorEl.className = 'error-message';
+						errorEl.textContent = message.payload.error;
+						messageList.appendChild(errorEl);
+						messageList.scrollTop = messageList.scrollHeight;
+					}
+					
+					// Hide loading, enable input
+					const loadingIndicator = document.querySelector('.loading-indicator');
+					if (loadingIndicator) {
+						loadingIndicator.style.display = 'none';
+					}
+					
+					const chatInput = document.getElementById('chat-input');
+					const sendBtn = document.getElementById('chat-send-btn');
+					const cancelBtn = document.getElementById('chat-cancel-btn');
+					if (chatInput) chatInput.disabled = false;
+					if (sendBtn) sendBtn.style.display = '';
+					if (cancelBtn) cancelBtn.style.display = 'none';
+					break;
+				}
+				
+				case 'chatCancelled': {
+					// Remove streaming message
+					const streamingEl = document.getElementById('streaming-message');
+					if (streamingEl) {
+						streamingEl.remove();
+					}
+					
+					// Hide loading, enable input
+					const loadingIndicator = document.querySelector('.loading-indicator');
+					if (loadingIndicator) {
+						loadingIndicator.style.display = 'none';
+					}
+					
+					const chatInput = document.getElementById('chat-input');
+					const sendBtn = document.getElementById('chat-send-btn');
+					const cancelBtn = document.getElementById('chat-cancel-btn');
+					if (chatInput) chatInput.disabled = false;
+					if (sendBtn) sendBtn.style.display = '';
+					if (cancelBtn) cancelBtn.style.display = 'none';
+					break;
+				}
+				
+				case 'chatStarted': {
+					// Incrementally add user message and show loading (no re-render)
+					const messageList = document.getElementById('message-list');
+					if (messageList && message.payload.userMessage) {
+						const { content, timestamp } = message.payload.userMessage;
+						const time = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+						
+						// Add user message
+						const userMsgWrapper = document.createElement('div');
+						userMsgWrapper.innerHTML = \`
+							<div class="message user-message">
+								<div class="message-avatar">👤</div>
+								<div class="message-content">
+									<div class="message-text">\${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+									<div class="message-timestamp">\${time}</div>
+								</div>
+							</div>
+						\`;
+						messageList.appendChild(userMsgWrapper.firstElementChild);
+						
+						// Scroll to bottom
+						messageList.scrollTop = messageList.scrollHeight;
+					}
+					
+					// Show loading indicator, disable input, show cancel
+					const loadingIndicator = document.querySelector('.loading-indicator');
+					if (loadingIndicator) {
+						loadingIndicator.style.display = '';
+					}
+					
+					const chatInput = document.getElementById('chat-input');
+					const sendBtn = document.getElementById('chat-send-btn');
+					const cancelBtn = document.getElementById('chat-cancel-btn');
+					if (chatInput) {
+						chatInput.disabled = true;
+						chatInput.value = '';
+					}
+					if (sendBtn) sendBtn.style.display = 'none';
+					if (cancelBtn) cancelBtn.style.display = '';
+					break;
+				}
+			}
+		});
+		
+		// Global click handler for data-action elements (navigation, etc.)
+		document.addEventListener('click', (e) => {
+			const target = e.target.closest('[data-action]');
+			if (!target) return;
+			
+			const action = target.dataset.action;
+			const page = target.dataset.page;
+			const sessionId = target.dataset.sessionId;
+			const providerId = target.dataset.providerId;
+			const providerName = target.dataset.providerName;
+			const sessionTitle = target.dataset.sessionTitle;
+			
+			console.log('[CircuitX] Click action:', action, { page, sessionId, providerId, providerName, sessionTitle });
+			
+			switch (action) {
+				case 'navigate':
+					if (page) {
+						console.log('[CircuitX] Navigating to:', page);
+						vscode.postMessage({ 
+							type: 'navigate', 
+							payload: { page, sessionId, providerId } 
+						});
+					}
+					break;
+					
+				case 'open':
+					// Open session in chat
+					if (sessionId) {
+						vscode.postMessage({
+							type: 'navigate',
+							payload: { page: 'chat', sessionId }
+						});
+					}
+					break;
+					
+				case 'edit':
+					// Start editing session
+					if (sessionId) {
+						vscode.postMessage({
+							type: 'startEditSession',
+							payload: { sessionId }
+						});
+					}
+					break;
+					
+				case 'save':
+					// Save session edit
+					if (sessionId) {
+						const input = document.getElementById('edit-session-' + sessionId);
+						if (input && input.value.trim()) {
+							vscode.postMessage({
+								type: 'renameSession',
+								payload: { sessionId, title: input.value.trim() },
+								requestId: crypto.randomUUID()
+							});
+						}
+					}
+					break;
+					
+				case 'cancelEdit':
+					vscode.postMessage({ type: 'cancelEditSession' });
+					break;
+					
+				case 'delete':
+					// Delete session - confirmation handled by extension
+					console.log('[CircuitX] Delete session:', sessionId, sessionTitle);
+					if (sessionId) {
+						vscode.postMessage({
+							type: 'confirmDeleteSession',
+							payload: { sessionId, sessionTitle: sessionTitle || 'Untitled' },
+							requestId: crypto.randomUUID()
+						});
+					}
+					break;
+					
+				case 'deleteProvider':
+					// Delete provider - confirmation handled by extension
+					console.log('[CircuitX] Delete provider:', providerId, providerName);
+					if (providerId) {
+						vscode.postMessage({
+							type: 'confirmDeleteProvider',
+							payload: { providerId, providerName: providerName || providerId },
+							requestId: crypto.randomUUID()
+						});
+					}
+					break;
+					
+				case 'test':
+					// Test provider connection
+					if (providerId) {
+						vscode.postMessage({
+							type: 'testProvider',
+							payload: { providerId },
+							requestId: crypto.randomUUID()
+						});
+					}
+					break;
+					
+				case 'setDefault':
+					// Set default provider
+					if (providerId) {
+						vscode.postMessage({
+							type: 'setDefaultProvider',
+							payload: { providerId },
+							requestId: crypto.randomUUID()
+						});
+					}
+					break;
+					
+				case 'prevPage':
+					const prevPageInfo = document.querySelector('.pagination-info');
+					if (prevPageInfo) {
+						const match = prevPageInfo.textContent.match(/Page (\\d+)/);
+						const currentPage = match ? parseInt(match[1], 10) - 1 : 0;
+						vscode.postMessage({
+							type: 'loadSessionList',
+							payload: { page: Math.max(0, currentPage - 1), pageSize: 20 },
+							requestId: crypto.randomUUID()
+						});
+					}
+					break;
+					
+				case 'nextPage':
+					const nextPageInfo = document.querySelector('.pagination-info');
+					if (nextPageInfo) {
+						const match = nextPageInfo.textContent.match(/Page (\\d+)/);
+						const currentPage = match ? parseInt(match[1], 10) - 1 : 0;
+						vscode.postMessage({
+							type: 'loadSessionList',
+							payload: { page: currentPage + 1, pageSize: 20 },
+							requestId: crypto.randomUUID()
+						});
+					}
+					break;
+			}
+		});
+		
+		// Handle keyboard events for edit inputs
+		document.addEventListener('keydown', (e) => {
+			if (e.target.classList && e.target.classList.contains('session-edit-input')) {
+				const sessionId = e.target.dataset.sessionId;
+				if (e.key === 'Enter') {
+					e.preventDefault();
+					const trimmedTitle = e.target.value.trim();
+					if (trimmedTitle) {
+						vscode.postMessage({
+							type: 'renameSession',
+							payload: { sessionId, title: trimmedTitle },
+							requestId: crypto.randomUUID()
+						});
+					}
+				} else if (e.key === 'Escape') {
+					e.preventDefault();
+					vscode.postMessage({ type: 'cancelEditSession' });
+				}
+			}
+			
+			// Handle Enter key for welcome/chat inputs
+			const welcomeInput = document.getElementById('welcome-input');
+			const chatInput = document.getElementById('chat-input');
+			if ((e.target === welcomeInput || e.target === chatInput) && e.key === 'Enter' && !e.shiftKey) {
+				e.preventDefault();
+				const input = e.target;
+				const content = input.value?.trim();
+				if (content) {
+					const sessionIdAttr = input.closest('[data-session-id]')?.dataset?.sessionId;
+					const payload = sessionIdAttr ? { sessionId: sessionIdAttr, content } : { content };
+					vscode.postMessage({
+						type: 'sendMessage',
+						payload,
+						requestId: crypto.randomUUID()
+					});
+					if (e.target === chatInput) {
+						input.value = '';
+					}
+				}
+			}
+		});
+		
+		// Handle form submissions
+		document.addEventListener('submit', (e) => {
+			const form = e.target;
+			console.log('[CircuitX] Form submit:', form.id);
+			if (form.id !== 'provider-form-element') return;
+			
+			e.preventDefault();
+			const formData = new FormData(form);
+			const isEditMode = form.dataset.editMode === 'true';
+			console.log('[CircuitX] Provider form submit, editMode:', isEditMode);
+			
+			const data = {
+				name: formData.get('name')?.toString().trim() || '',
+				baseUrl: formData.get('baseUrl')?.toString().trim() || '',
+				model: formData.get('model')?.toString().trim() || '',
+				apiKey: formData.get('apiKey')?.toString() || '',
+				isDefault: formData.get('isDefault') === 'on',
+			};
+			console.log('[CircuitX] Form data:', data);
+			
+			// Client-side validation
+			if (!data.name || !data.baseUrl || !data.model) {
+				alert('Please fill in all required fields');
+				return;
+			}
+			
+			// URL validation
+			try {
+				new URL(data.baseUrl);
+			} catch {
+				alert('Please enter a valid URL for Base URL');
+				return;
+			}
+			
+			if (isEditMode) {
+				const id = formData.get('id')?.toString();
+				console.log('[CircuitX] Updating provider:', id, data);
+				vscode.postMessage({
+					type: 'updateProvider',
+					payload: { id, ...data },
+					requestId: crypto.randomUUID()
+				});
+			} else {
+				console.log('[CircuitX] Adding provider:', data);
+				vscode.postMessage({
+					type: 'addProvider',
+					payload: data,
+					requestId: crypto.randomUUID()
+				});
+			}
+		});
+		
+		// Handle button clicks for welcome/chat pages
+		document.addEventListener('click', (e) => {
+			// Welcome send button
+			if (e.target.id === 'welcome-send-btn') {
+				const input = document.getElementById('welcome-input');
+				const content = input?.value?.trim();
+				if (content) {
+					vscode.postMessage({
+						type: 'sendMessage',
+						payload: { content },
+						requestId: crypto.randomUUID()
+					});
+				}
+			}
+			
+			// Chat send button
+			if (e.target.id === 'chat-send-btn') {
+				const input = document.getElementById('chat-input');
+				const content = input?.value?.trim();
+				if (content) {
+					// Get session ID from page
+					const chatPage = document.querySelector('.chat-page');
+					const sessionId = chatPage?.dataset?.sessionId;
+					vscode.postMessage({
+						type: 'sendMessage',
+						payload: { content, sessionId },
+						requestId: crypto.randomUUID()
+					});
+					input.value = '';
+				}
+			}
+			
+			// Chat cancel button
+			if (e.target.id === 'chat-cancel-btn') {
+				const chatPage = document.querySelector('.chat-page');
+				const sessionId = chatPage?.dataset?.sessionId;
+				vscode.postMessage({
+					type: 'cancelMessage',
+					payload: { sessionId },
+					requestId: crypto.randomUUID()
+				});
+			}
+		});
+		
+		// Auto-scroll message list
+		const messageList = document.getElementById('message-list');
+		if (messageList) {
+			// Initial scroll
+			messageList.scrollTop = messageList.scrollHeight;
+			
+			// Observe for new messages
+			const observer = new MutationObserver(() => {
+				const wasAtBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight < 100;
+				if (wasAtBottom) {
+					messageList.scrollTop = messageList.scrollHeight;
+				}
+			});
+			observer.observe(messageList, { childList: true, subtree: true, characterData: true });
+			
+			window.scrollMessagesToBottom = () => {
+				messageList.scrollTop = messageList.scrollHeight;
+			};
+		}
+		
+		// Focus input on page load
+		const welcomeInput = document.getElementById('welcome-input');
+		const chatInput = document.getElementById('chat-input');
+		(welcomeInput || chatInput)?.focus();
+		
+		// Auto-dismiss success messages
+		const autoDismissElements = document.querySelectorAll('[data-auto-dismiss]');
+		autoDismissElements.forEach(el => {
+			const delay = parseInt(el.dataset.autoDismiss, 10) || 3000;
+			setTimeout(() => {
+				el.style.opacity = '0';
+				setTimeout(() => el.remove(), 300);
+			}, delay);
 		});
 	</script>
 </body>

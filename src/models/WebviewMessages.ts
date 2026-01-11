@@ -92,13 +92,23 @@ export interface LoadSessionMessage extends BaseMessage {
 	requestId: string;
 }
 
+/** Confirm delete session (shows VS Code native dialog) */
+export interface ConfirmDeleteSessionMessage extends BaseMessage {
+	type: 'confirmDeleteSession';
+	payload: {
+		sessionId: string;
+		sessionTitle: string;
+	};
+	requestId?: string;
+}
+
 /** Delete a session permanently */
 export interface DeleteSessionMessage extends BaseMessage {
 	type: 'deleteSession';
 	payload: {
 		sessionId: string;
 	};
-	requestId: string;
+	requestId?: string;
 }
 
 /** Rename an existing session */
@@ -163,6 +173,16 @@ export interface UpdateProviderMessage extends BaseMessage {
 	requestId: string;
 }
 
+/** Confirm delete provider (shows VS Code native dialog) */
+export interface ConfirmDeleteProviderMessage extends BaseMessage {
+	type: 'confirmDeleteProvider';
+	payload: {
+		providerId: string;
+		providerName: string;
+	};
+	requestId?: string;
+}
+
 /** Delete a provider configuration */
 export interface DeleteProviderMessage extends BaseMessage {
 	type: 'deleteProvider';
@@ -170,7 +190,7 @@ export interface DeleteProviderMessage extends BaseMessage {
 		id?: string;
 		providerId?: string; // Alternative field name from UI
 	};
-	requestId: string;
+	requestId?: string;
 }
 
 /** Test provider connectivity and configuration */
@@ -225,7 +245,9 @@ export type WebviewMessage =
 	| TestProviderMessage
 	| SetDefaultProviderMessage
 	| StartEditSessionMessage
-	| CancelEditSessionMessage;
+	| CancelEditSessionMessage
+	| ConfirmDeleteSessionMessage
+	| ConfirmDeleteProviderMessage;
 
 /**
  * Extension-to-webview message types
@@ -277,7 +299,24 @@ export interface ChatChunkMessage {
 	};
 	requestId: string;
 }
-
+/**
+ * Chat started message - sent when user sends a message in existing session
+ * - Used for incremental DOM update without full re-render
+ * - Contains the user message that was added
+ */
+export interface ChatStartedMessage {
+	type: 'chatStarted';
+	payload: {
+		sessionId: string;
+		userMessage: {
+			id: string;
+			role: 'user';
+			content: string;
+			timestamp: string;
+		};
+	};
+	requestId: string;
+}
 /** 
  * Chat response complete
  * - Sent when AI finishes generating
@@ -324,7 +363,7 @@ export interface SessionDeletedMessage {
 	payload: {
 		sessionId: string;
 	};
-	requestId: string;
+	requestId?: string;
 }
 
 /** Session renamed successfully - response to RenameSessionMessage */
@@ -383,7 +422,7 @@ export interface ProviderDeletedMessage {
 	payload: {
 		id: string;
 	};
-	requestId: string;
+	requestId?: string;
 }
 
 /** 
@@ -430,6 +469,7 @@ export interface ErrorResponse {
 export type ExtensionMessage =
 	| StateUpdateMessage
 	| InitializeMessage
+	| ChatStartedMessage
 	| ChatChunkMessage
 	| ChatCompleteMessage
 	| ChatErrorMessage

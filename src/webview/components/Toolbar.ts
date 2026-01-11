@@ -17,6 +17,8 @@ export function Toolbar(props: ToolbarProps): string {
 				id="new-chat-btn"
 				title="New Chat"
 				aria-label="New Chat"
+				data-action="navigate"
+				data-page="welcome"
 			>
 				<span class="icon">➕</span>
 			</button>
@@ -25,6 +27,8 @@ export function Toolbar(props: ToolbarProps): string {
 				id="history-btn"
 				title="Chat History"
 				aria-label="Chat History"
+				data-action="navigate"
+				data-page="history"
 			>
 				<span class="icon">🕒</span>
 			</button>
@@ -33,26 +37,11 @@ export function Toolbar(props: ToolbarProps): string {
 				id="settings-btn"
 				title="Settings"
 				aria-label="Settings"
+				data-action="navigate"
+				data-page="providers"
 			>
 				<span class="icon">⚙️</span>
 			</button>
 		</div>
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				
-				document.getElementById('new-chat-btn')?.addEventListener('click', () => {
-					vscode.postMessage({ type: 'navigate', payload: { page: 'chat' } });
-				});
-				
-				document.getElementById('history-btn')?.addEventListener('click', () => {
-					vscode.postMessage({ type: 'navigate', payload: { page: 'history' } });
-				});
-				
-				document.getElementById('settings-btn')?.addEventListener('click', () => {
-					vscode.postMessage({ type: 'navigate', payload: { page: 'providers' } });
-				});
-			})();
-		</script>
 	`;
 }

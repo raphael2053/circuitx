@@ -91,7 +91,8 @@ function renderProviderRow(
 					<button 
 						class="btn btn-icon btn-edit" 
 						title="Edit provider"
-						data-action="edit"
+						data-action="navigate"
+						data-page="editProvider"
 						data-provider-id="${provider.id}"
 					>
 						✏️
@@ -109,7 +110,7 @@ function renderProviderRow(
 					<button 
 						class="btn btn-icon btn-delete ${isDefault ? 'btn-disabled' : ''}" 
 						title="${isDefault ? 'Cannot delete default provider' : 'Delete provider'}"
-						data-action="delete"
+						data-action="deleteProvider"
 						data-provider-id="${provider.id}"
 						data-provider-name="${escapeHtml(provider.name)}"
 						${isDefault ? 'disabled' : ''}
@@ -119,68 +120,6 @@ function renderProviderRow(
 				</div>
 			</td>
 		</tr>
-	`;
-}
-
-/**
- * Generate script for table actions
- */
-export function ProviderTableScript(): string {
-	return `
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				const table = document.querySelector('.provider-table');
-				
-				// Event delegation for action buttons
-				table?.addEventListener('click', (e) => {
-					const target = e.target;
-					if (!(target instanceof HTMLButtonElement)) return;
-					
-					const action = target.dataset.action;
-					const providerId = target.dataset.providerId;
-					const providerName = target.dataset.providerName;
-					
-					if (!action || !providerId) return;
-					
-					switch (action) {
-						case 'test':
-							vscode.postMessage({
-								type: 'testProvider',
-								payload: { providerId },
-								requestId: crypto.randomUUID()
-							});
-							break;
-							
-						case 'edit':
-							vscode.postMessage({
-								type: 'navigate',
-								payload: { page: 'editProvider', providerId }
-							});
-							break;
-							
-						case 'setDefault':
-							vscode.postMessage({
-								type: 'setDefaultProvider',
-								payload: { providerId },
-								requestId: crypto.randomUUID()
-							});
-							break;
-							
-						case 'delete':
-							// FR-028: Show confirmation dialog before delete
-							if (confirm('Are you sure you want to delete the provider "' + (providerName || providerId) + '"?')) {
-								vscode.postMessage({
-									type: 'deleteProvider',
-									payload: { providerId },
-									requestId: crypto.randomUUID()
-								});
-							}
-							break;
-					}
-				});
-			})();
-		</script>
 	`;
 }
 

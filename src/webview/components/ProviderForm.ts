@@ -34,7 +34,7 @@ export function ProviderForm(props: ProviderFormProps): string {
 			
 			${error ? `<div class="form-error">${escapeHtml(error)}</div>` : ''}
 			
-			<form id="provider-form-element">
+			<form id="provider-form-element" data-edit-mode="${isEditMode}">
 				${provider ? `<input type="hidden" name="id" value="${provider.id}" />` : ''}
 				
 				<div class="form-group">
@@ -122,6 +122,8 @@ export function ProviderForm(props: ProviderFormProps): string {
 						type="button" 
 						class="btn btn-secondary" 
 						id="provider-cancel-btn"
+						data-action="navigate"
+						data-page="providers"
 						${isLoading ? 'disabled' : ''}
 					>
 						Cancel
@@ -137,72 +139,6 @@ export function ProviderForm(props: ProviderFormProps): string {
 				</div>
 			</form>
 		</div>
-	`;
-}
-
-/**
- * Generate script for form handling
- */
-export function ProviderFormScript(isEditMode: boolean): string {
-	return `
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				const form = document.getElementById('provider-form-element');
-				const cancelBtn = document.getElementById('provider-cancel-btn');
-				
-				// Handle form submission
-				form?.addEventListener('submit', (e) => {
-					e.preventDefault();
-					
-					const formData = new FormData(form);
-					const data = {
-						name: formData.get('name')?.toString().trim() || '',
-						baseUrl: formData.get('baseUrl')?.toString().trim() || '',
-						model: formData.get('model')?.toString().trim() || '',
-						apiKey: formData.get('apiKey')?.toString() || '',
-						isDefault: formData.get('isDefault') === 'on',
-					};
-					
-					// Client-side validation
-					if (!data.name || !data.baseUrl || !data.model) {
-						alert('Please fill in all required fields');
-						return;
-					}
-					
-					// URL validation
-					try {
-						new URL(data.baseUrl);
-					} catch {
-						alert('Please enter a valid URL for Base URL');
-						return;
-					}
-					
-					${isEditMode ? `
-					const id = formData.get('id')?.toString();
-					vscode.postMessage({
-						type: 'updateProvider',
-						payload: { id, ...data },
-						requestId: crypto.randomUUID()
-					});
-					` : `
-					vscode.postMessage({
-						type: 'addProvider',
-						payload: data,
-						requestId: crypto.randomUUID()
-					});
-					`}
-				});
-				
-				// Handle cancel
-				cancelBtn?.addEventListener('click', () => {
-					vscode.postMessage({
-						type: 'navigate',
-						payload: { page: 'providers' }
-					});
-				});
-			})();
-		</script>
 	`;
 }
 

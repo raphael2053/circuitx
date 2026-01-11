@@ -12,7 +12,7 @@
  */
 
 import { Toolbar } from '../components/Toolbar';
-import { SessionList, SessionListScript } from '../components/SessionList';
+import { SessionList } from '../components/SessionList';
 import { SessionMetadata } from '../../models/Session';
 
 export interface HistoryPageProps {
@@ -61,7 +61,7 @@ export function HistoryPage(props: HistoryPageProps): string {
 			</div>
 			
 			${successMessage ? `
-				<div class="success-message" id="success-message">
+				<div class="success-message" id="success-message" data-auto-dismiss="3000">
 					<span class="success-icon">✓</span>
 					${escapeHtml(successMessage)}
 				</div>
@@ -85,29 +85,6 @@ export function HistoryPage(props: HistoryPageProps): string {
 				})}
 			</div>
 		</div>
-		
-		${SessionListScript()}
-		${HistoryPageScript()}
-	`;
-}
-
-/**
- * Generate script for history page
- */
-function HistoryPageScript(): string {
-	return `
-		<script>
-			(function() {
-				// Auto-hide success message after 3 seconds
-				const successMsg = document.getElementById('success-message');
-				if (successMsg) {
-					setTimeout(() => {
-						successMsg.style.opacity = '0';
-						setTimeout(() => successMsg.remove(), 300);
-					}, 3000);
-				}
-			})();
-		</script>
 	`;
 }
 

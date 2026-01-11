@@ -33,43 +33,5 @@ export function InputBox(props: InputBoxProps): string {
 				}
 			</div>
 		</div>
-		<script>
-			(function() {
-				const vscode = acquireVsCodeApi();
-				const input = document.getElementById('message-input');
-				const sendBtn = document.getElementById('send-btn');
-				const cancelBtn = document.getElementById('cancel-btn');
-				
-				// Handle send
-				sendBtn?.addEventListener('click', () => {
-					const content = input?.value?.trim();
-					if (content) {
-						vscode.postMessage({ 
-							type: 'sendMessage', 
-							payload: { content },
-							requestId: crypto.randomUUID()
-						});
-						input.value = '';
-					}
-				});
-				
-				// Handle cancel
-				cancelBtn?.addEventListener('click', () => {
-					vscode.postMessage({ 
-						type: 'cancelRequest', 
-						payload: {},
-						requestId: crypto.randomUUID()
-					});
-				});
-				
-				// Handle Enter key (Shift+Enter for new line)
-				input?.addEventListener('keydown', (e) => {
-					if (e.key === 'Enter' && !e.shiftKey) {
-						e.preventDefault();
-						sendBtn?.click();
-					}
-				});
-			})();
-		</script>
 	`;
 }
