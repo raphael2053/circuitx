@@ -1,0 +1,1473 @@
+/**
+ * CircuitX Webview Styles
+ * Uses VS Code CSS variables for consistent theming
+ * Enhanced with modern UI effects: gradients, shadows, animations
+ */
+
+/* 
+ * Base Styles
+ * - Resets margins/padding
+ * - Sets fonts, colors from VS Code theme
+ * - Makes body fill viewport without overflow
+ */
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+	font-weight: var(--vscode-font-weight);
+	color: var(--vscode-foreground);
+	background-color: var(--vscode-editor-background);
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* 
+ * Layout
+ * - full-height flex container for all pages
+ */
+.page {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	width: 100%;
+}
+
+/* 
+ * Toolbar
+ * - Top bar with buttons (New Chat, History, Settings, etc.)
+ * - Hover/active states for button interactions
+ * - Enhanced with shadows and smooth transitions
+ */
+.toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 10px 8px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	background: linear-gradient(180deg, var(--vscode-sideBar-background) 0%, var(--vscode-editor-background) 100%);
+	flex-shrink: 0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-button {
+	background: none;
+	border: none;
+	color: var(--vscode-foreground);
+	cursor: pointer;
+	padding: 8px 14px;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	transition: all 0.2s ease;
+	border-radius: 6px;
+	position: relative;
+}
+
+.toolbar-button::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: 6px;
+	background: var(--vscode-toolbar-hoverBackground);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.toolbar-button:hover::before {
+	opacity: 1;
+}
+
+.toolbar-button:hover {
+	transform: translateY(-1px);
+}
+
+.toolbar-button:active {
+	transform: translateY(0);
+}
+
+.toolbar-button .icon {
+	position: relative;
+	z-index: 1;
+}
+
+/* 
+ * Buttons
+ * - Primary buttons (blue/accent color)
+ * - Secondary buttons (muted color)
+ * - Disabled states
+ * - Enhanced with shadows and smooth animations
+ */
+.button {
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: none;
+	padding: 10px 18px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 500;
+	border-radius: 6px;
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	position: relative;
+	overflow: hidden;
+}
+
+.button::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.1);
+	transform: translate(-50%, -50%);
+	transition: width 0.6s, height 0.6s;
+}
+
+.button:hover::before {
+	width: 300px;
+	height: 300px;
+}
+
+.button:hover {
+	background-color: var(--vscode-button-hoverBackground);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.button:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
+}
+
+.button-secondary {
+	background-color: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+}
+
+.button-secondary:hover {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+/* 
+ * Input Boxes
+ * - Text areas for user input
+ * - Focus states with glow effect, placeholders
+ * - Smooth transitions and shadows
+ */
+.input-box {
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-input-border);
+	padding: 10px 12px;
+	font-family: var(--vscode-font-family);
+	font-size: 13px;
+	width: 100%;
+	resize: vertical;
+	min-height: 80px;
+	border-radius: 6px;
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	line-height: 1.5;
+}
+
+.input-box:focus {
+	outline: none;
+	border-color: var(--vscode-focusBorder);
+	box-shadow: 0 0 0 3px rgba(14, 99, 156, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+	transform: translateY(-1px);
+}
+
+.input-box::placeholder {
+	color: var(--vscode-input-placeholderForeground);
+	transition: opacity 0.2s ease;
+}
+
+.input-box:focus::placeholder {
+	opacity: 0.6;
+}
+
+/* 
+ * Welcome Page
+ * - Initial landing page layout
+ * - Title, subtitle, input area
+ * - Enhanced with animations
+ */
+.welcome-page {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	padding: 32px 24px;
+	overflow-y: auto;
+	animation: fadeIn 0.5s ease-out;
+}
+
+.welcome-header {
+	margin-bottom: 32px;
+	animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.welcome-title {
+	font-size: 28px;
+	font-weight: 700;
+	margin-bottom: 12px;
+	background: linear-gradient(135deg, var(--vscode-foreground) 0%, var(--vscode-textLink-foreground) 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.welcome-subtitle {
+	color: var(--vscode-descriptionForeground);
+	font-size: 15px;
+	line-height: 1.6;
+}
+
+.welcome-input-container {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.welcome-input {
+	flex: 1;
+	min-height: 100px;
+}
+
+/* 
+ * Chat Page
+ * - Header with chat title
+ * - Scrollable message container
+ * - Input area at bottom with send button
+ */
+.chat-page {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.chat-header {
+	padding: 16px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	background: linear-gradient(to bottom, var(--vscode-sideBar-background), var(--vscode-editor-background));
+	flex-shrink: 0;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chat-title {
+	font-size: 14px;
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vscode-foreground);
+}
+
+.chat-messages {
+	flex: 1;
+	overflow-y: auto;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	scroll-behavior: smooth;
+}
+
+.chat-input-container {
+	padding: 16px;
+	border-top: 1px solid var(--vscode-panel-border);
+	background: linear-gradient(to top, var(--vscode-sideBar-background), var(--vscode-editor-background));
+	flex-shrink: 0;
+	display: flex;
+	gap: 12px;
+	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chat-input {
+	flex: 1;
+	min-height: 60px;
+	max-height: 200px;
+}
+
+/* 
+ * Messages
+ * - Different styling for user vs assistant messages
+ * - User messages: input background with card style
+ * - Assistant messages: editor background with card style
+ * - Enhanced with shadows and subtle animations
+ */
+.message {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.message-role {
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--vscode-descriptionForeground);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.8;
+}
+
+.message-content {
+	background-color: var(--vscode-editor-background);
+	border: 1px solid var(--vscode-panel-border);
+	padding: 14px 16px;
+	border-radius: 8px;
+	line-height: 1.6;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	transition: box-shadow 0.2s ease;
+}
+
+.message-content:hover {
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.message-user .message-content {
+	background-color: var(--vscode-input-background);
+	border-left: 3px solid var(--vscode-button-background);
+}
+
+.message-assistant .message-content {
+	background-color: var(--vscode-editor-background);
+	border-left: 3px solid var(--vscode-textLink-foreground);
+}
+
+/* 
+ * Loading
+ * - Spinning animation for "AI is thinking..."
+ * - Uses CSS animation for rotation
+ */
+.loading-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--vscode-descriptionForeground);
+	font-size: 13px;
+	padding: 12px 16px;
+	background-color: var(--vscode-editor-background);
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.6;
+	}
+}
+
+.loading-spinner {
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--vscode-progressBar-background);
+	border-top-color: var(--vscode-textLink-foreground);
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+/* 
+ * History Page
+ * - List of past chat sessions
+ * - Clickable session items with hover effects
+ * - Delete/restore actions
+ */
+.history-page {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.history-header {
+	padding: 20px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	flex-shrink: 0;
+	background: linear-gradient(to bottom, var(--vscode-sideBar-background), var(--vscode-editor-background));
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.history-title {
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.history-list {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px;
+}
+
+.session-item {
+	padding: 14px 16px;
+	border: 1px solid var(--vscode-panel-border);
+	border-radius: 8px;
+	margin-bottom: 10px;
+	cursor: pointer;
+	background-color: var(--vscode-editor-background);
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.session-item:hover {
+	background-color: var(--vscode-list-hoverBackground);
+	border-color: var(--vscode-focusBorder);
+	transform: translateX(4px);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.session-item-title {
+	font-weight: 600;
+	margin-bottom: 6px;
+	cursor: pointer;
+	transition: color 0.2s ease;
+}
+
+.session-item-title:hover {
+	color: var(--vscode-textLink-foreground);
+}
+
+.session-item-meta {
+	font-size: 12px;
+	color: var(--vscode-descriptionForeground);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid var(--vscode-panel-border);
+}
+
+.session-item-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.session-item-action {
+	font-size: 12px;
+	padding: 6px 10px;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+}
+
+.session-item-action:hover {
+	transform: translateY(-1px);
+}
+
+/* 
+ * Providers Page
+ * - Configure LLM providers (OpenAI, Anthropic, etc.)
+ * - Table layout with edit/delete/set-default actions
+ */
+.providers-page {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.providers-header {
+	padding: 20px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-shrink: 0;
+	background: linear-gradient(to bottom, var(--vscode-sideBar-background), var(--vscode-editor-background));
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.providers-title {
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.providers-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px;
+}
+
+.providers-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0 8px;
+}
+
+.providers-table th {
+	text-align: left;
+	padding: 10px 12px;
+	border-bottom: 2px solid var(--vscode-panel-border);
+	font-weight: 600;
+	font-size: 12px;
+	color: var(--vscode-descriptionForeground);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.providers-table td {
+	padding: 14px 12px;
+	background-color: var(--vscode-editor-background);
+	border: 1px solid var(--vscode-panel-border);
+	transition: all 0.2s ease;
+}
+
+.providers-table tr {
+	transition: transform 0.2s ease;
+}
+
+.providers-table tr:hover td {
+	background-color: var(--vscode-list-hoverBackground);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.providers-table td:first-child {
+	border-radius: 6px 0 0 6px;
+}
+
+.providers-table td:last-child {
+	border-radius: 0 6px 6px 0;
+}
+
+.provider-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.provider-action-btn {
+	font-size: 12px;
+	padding: 6px 10px;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+}
+
+.provider-action-btn:hover {
+	transform: translateY(-1px);
+}
+
+/* 
+ * Form
+ * - Input fields for adding/editing providers
+ * - Labels, validation
+ * - Action buttons at bottom right
+ * - Enhanced with card styling
+ */
+.form-container {
+	background-color: var(--vscode-editor-background);
+	border: 1px solid var(--vscode-panel-border);
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.form-group {
+	margin-bottom: 16px;
+}
+
+.form-label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--vscode-foreground);
+}
+
+.form-input {
+	width: 100%;
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-input-border);
+	padding: 10px 12px;
+	font-size: 13px;
+	border-radius: 6px;
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.form-input:focus {
+	outline: none;
+	border-color: var(--vscode-focusBorder);
+	box-shadow: 0 0 0 3px rgba(14, 99, 156, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+	transform: translateY(-1px);
+}
+
+.form-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+	padding-top: 16px;
+	border-top: 1px solid var(--vscode-panel-border);
+	margin-top: 8px;
+}
+
+/* 
+ * Empty State
+ * - "No sessions yet" placeholder messages
+ * - Centered icon and text
+ * - Used when lists are empty
+ * - Enhanced with subtle animations
+ */
+.empty-state {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 48px 24px;
+	text-align: center;
+	color: var(--vscode-descriptionForeground);
+	animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.empty-state-icon {
+	font-size: 48px;
+	margin-bottom: 16px;
+	opacity: 0.4;
+	animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+	0%, 100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
+}
+
+.empty-state-message {
+	font-size: 14px;
+	margin-bottom: 16px;
+	line-height: 1.5;
+}
+
+/* 
+ * Error
+ * - Red error boxes for validation/API errors
+ * - Uses VS Code error colors
+ * - Enhanced with icon and animations
+ */
+.error-message {
+	background-color: var(--vscode-inputValidation-errorBackground);
+	border: 1px solid var(--vscode-inputValidation-errorBorder);
+	border-left: 4px solid var(--vscode-errorForeground);
+	color: var(--vscode-errorForeground);
+	padding: 14px 16px;
+	border-radius: 6px;
+	margin: 12px 0;
+	font-size: 13px;
+	line-height: 1.5;
+	box-shadow: 0 2px 4px rgba(255, 0, 0, 0.1);
+	animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+	0%, 100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-5px);
+	}
+	75% {
+		transform: translateX(5px);
+	}
+}
+
+/* 
+ * Scrollbar
+ * - Custom scrollbar styling matching VS Code theme
+ * - Webkit-based browsers only
+ * - Smooth hover transitions
+ */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var(--vscode-scrollbarSlider-background);
+	border-radius: 5px;
+	transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+::-webkit-scrollbar-thumb:active {
+	background-color: var(--vscode-scrollbarSlider-activeBackground);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: var(--vscode-scrollbarSlider-activeBackground);
+}
+
+/*
+ * Message List Component (T038, T044)
+ * - Message items with avatars
+ * - User/assistant differentiation
+ * - Streaming cursor animation
+ * - Loading dots animation
+ */
+.message-list {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.message {
+	display: flex;
+	flex-direction: row;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.message-avatar {
+	font-size: 20px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	background-color: var(--vscode-editor-background);
+	border-radius: 4px;
+}
+
+.message-content {
+	flex: 1;
+	min-width: 0; /* Allow text wrapping */
+}
+
+.message-text {
+	background-color: var(--vscode-editor-background);
+	border: 1px solid var(--vscode-panel-border);
+	padding: 12px;
+	border-radius: 4px;
+	line-height: 1.6;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.message-user .message-text {
+	background-color: var(--vscode-input-background);
+}
+
+.message-assistant .message-text {
+	background-color: var(--vscode-editor-background);
+}
+
+.message-timestamp {
+	font-size: 11px;
+	color: var(--vscode-descriptionForeground);
+	margin-top: 6px;
+}
+
+/* Streaming cursor animation */
+.streaming-cursor {
+	animation: blink 0.8s infinite;
+	color: var(--vscode-editorCursor-foreground);
+}
+
+@keyframes blink {
+	0%, 50% { opacity: 1; }
+	51%, 100% { opacity: 0; }
+}
+
+/* Loading dots animation (T040) */
+.loading-indicator {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 12px;
+}
+
+.loading-dot {
+	width: 8px;
+	height: 8px;
+	background-color: var(--vscode-foreground);
+	border-radius: 50%;
+	animation: loading-bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dot:nth-child(1) {
+	animation-delay: -0.32s;
+}
+
+.loading-dot:nth-child(2) {
+	animation-delay: -0.16s;
+}
+
+.loading-dot:nth-child(3) {
+	animation-delay: 0s;
+}
+
+@keyframes loading-bounce {
+	0%, 80%, 100% {
+		transform: scale(0);
+		opacity: 0.5;
+	}
+	40% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* Error display in messages */
+.message-error {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px;
+	background-color: var(--vscode-inputValidation-errorBackground);
+	border: 1px solid var(--vscode-inputValidation-errorBorder);
+	border-radius: 4px;
+	color: var(--vscode-errorForeground);
+}
+
+.error-icon {
+	font-size: 16px;
+}
+
+.error-text {
+	flex: 1;
+}
+
+.error-retry-btn {
+	background: none;
+	border: none;
+	color: var(--vscode-textLink-foreground);
+	cursor: pointer;
+	text-decoration: underline;
+	font-size: 13px;
+}
+
+.error-retry-btn:hover {
+	color: var(--vscode-textLink-activeForeground);
+}
+
+/* Code blocks in messages */
+.code-block {
+	background-color: var(--vscode-textCodeBlock-background);
+	border: 1px solid var(--vscode-panel-border);
+	border-radius: 4px;
+	padding: 12px;
+	margin: 8px 0;
+	overflow-x: auto;
+	font-family: var(--vscode-editor-font-family), monospace;
+	font-size: var(--vscode-editor-font-size);
+}
+
+.inline-code {
+	background-color: var(--vscode-textCodeBlock-background);
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-family: var(--vscode-editor-font-family), monospace;
+	font-size: 0.9em;
+}
+
+/* Chat input actions */
+.chat-input-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.btn {
+	padding: 8px 16px;
+	border: none;
+	border-radius: 2px;
+	cursor: pointer;
+	font-size: 13px;
+	transition: background-color 0.2s;
+}
+
+.btn-primary {
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+}
+
+.btn-primary:hover {
+	background-color: var(--vscode-button-hoverBackground);
+}
+
+.btn-secondary {
+	background-color: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+}
+
+.btn-secondary:hover {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.btn-link {
+	background: none;
+	color: var(--vscode-textLink-foreground);
+	padding: 4px 8px;
+}
+
+.btn-link:hover {
+	color: var(--vscode-textLink-activeForeground);
+	text-decoration: underline;
+}
+
+/* 
+ * Providers Page
+ * - Header with title and Add button
+ * - Table of providers
+ * - Form for add/edit
+ */
+.providers-page {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.providers-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	background-color: var(--vscode-sideBar-background);
+	flex-shrink: 0;
+}
+
+.providers-title {
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.providers-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px;
+}
+
+.providers-help {
+	padding: 16px;
+	border-top: 1px solid var(--vscode-panel-border);
+	background-color: var(--vscode-sideBar-background);
+	font-size: 13px;
+}
+
+.providers-help h3 {
+	font-size: 14px;
+	margin-bottom: 8px;
+}
+
+.providers-help p {
+	margin-bottom: 8px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.providers-help ul {
+	margin-left: 20px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.providers-help li {
+	margin-bottom: 4px;
+}
+
+/* Provider Table */
+.provider-table-container {
+	overflow-x: auto;
+}
+
+.provider-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.provider-table th,
+.provider-table td {
+	padding: 10px 12px;
+	text-align: left;
+	border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.provider-table th {
+	font-weight: 600;
+	color: var(--vscode-descriptionForeground);
+	text-transform: uppercase;
+	font-size: 11px;
+	background-color: var(--vscode-sideBar-background);
+}
+
+.provider-table tbody tr:hover {
+	background-color: var(--vscode-list-hoverBackground);
+}
+
+.provider-row.is-default {
+	background-color: var(--vscode-list-activeSelectionBackground);
+}
+
+.provider-row.is-default:hover {
+	background-color: var(--vscode-list-activeSelectionBackground);
+}
+
+.default-indicator {
+	margin-right: 6px;
+}
+
+.col-name {
+	width: 25%;
+}
+
+.col-url {
+	width: 35%;
+}
+
+.col-model {
+	width: 20%;
+}
+
+.col-actions {
+	width: 20%;
+}
+
+.provider-url {
+	font-family: var(--vscode-editor-font-family), monospace;
+	font-size: 12px;
+	color: var(--vscode-textLink-foreground);
+}
+
+.action-buttons {
+	display: flex;
+	gap: 8px;
+}
+
+.btn-icon {
+	padding: 4px 8px;
+	font-size: 14px;
+	background: none;
+	border: 1px solid transparent;
+	cursor: pointer;
+	border-radius: 2px;
+	transition: background-color 0.2s;
+}
+
+.btn-icon:hover {
+	background-color: var(--vscode-toolbar-hoverBackground);
+	border-color: var(--vscode-panel-border);
+}
+
+.btn-icon.btn-disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.btn-icon.btn-disabled:hover {
+	background: none;
+	border-color: transparent;
+}
+
+.provider-table-empty {
+	text-align: center;
+	padding: 40px 20px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.provider-table-empty p {
+	margin-bottom: 12px;
+}
+
+/* Provider Form */
+.provider-form {
+	max-width: 500px;
+	margin: 0 auto;
+	padding: 16px;
+}
+
+.form-title {
+	font-size: 18px;
+	font-weight: 600;
+	margin-bottom: 24px;
+}
+
+.form-group {
+	margin-bottom: 16px;
+}
+
+.form-label {
+	display: block;
+	font-size: 13px;
+	font-weight: 500;
+	margin-bottom: 6px;
+}
+
+.form-label .required {
+	color: var(--vscode-inputValidation-errorBorder);
+}
+
+.form-label .optional {
+	font-weight: normal;
+	color: var(--vscode-descriptionForeground);
+}
+
+.form-input {
+	width: 100%;
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-input-border);
+	padding: 8px 10px;
+	font-size: 13px;
+	border-radius: 2px;
+}
+
+.form-input:focus {
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: -1px;
+}
+
+.form-input::placeholder {
+	color: var(--vscode-input-placeholderForeground);
+}
+
+.form-input:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.form-hint {
+	display: block;
+	font-size: 12px;
+	color: var(--vscode-descriptionForeground);
+	margin-top: 4px;
+}
+
+.form-checkbox {
+	display: flex;
+	align-items: center;
+}
+
+.checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+	cursor: pointer;
+}
+
+.form-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 24px;
+	justify-content: flex-end;
+}
+
+.form-error {
+	background-color: var(--vscode-inputValidation-errorBackground);
+	border: 1px solid var(--vscode-inputValidation-errorBorder);
+	color: var(--vscode-inputValidation-errorForeground);
+	padding: 10px;
+	margin-bottom: 16px;
+	border-radius: 2px;
+}
+
+/* Success/Error messages */
+.success-message {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background-color: var(--vscode-inputValidation-infoBackground);
+	border: 1px solid var(--vscode-inputValidation-infoBorder);
+	color: var(--vscode-inputValidation-infoForeground);
+	padding: 10px 16px;
+	margin: 0 16px 16px;
+	border-radius: 2px;
+	transition: opacity 0.3s;
+}
+
+.success-icon {
+	color: var(--vscode-testing-iconPassed);
+}
+
+.error-message {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background-color: var(--vscode-inputValidation-errorBackground);
+	border: 1px solid var(--vscode-inputValidation-errorBorder);
+	color: var(--vscode-inputValidation-errorForeground);
+	padding: 10px 16px;
+	margin: 0 16px 16px;
+	border-radius: 2px;
+}
+
+.error-icon {
+	color: var(--vscode-testing-iconFailed);
+}
+
+.btn-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* 
+ * History Page
+ * - Header with title and session count
+ * - Scrollable list of session items
+ * - Pagination controls
+ */
+.history-page {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.history-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	background-color: var(--vscode-sideBar-background);
+	flex-shrink: 0;
+}
+
+.history-title {
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.history-count {
+	font-size: 13px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.history-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0;
+}
+
+/* Session List */
+.session-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.session-list-loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 40px 20px;
+	gap: 12px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.session-list-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 60px 20px;
+	text-align: center;
+}
+
+.session-list-empty .empty-icon {
+	font-size: 48px;
+	margin-bottom: 16px;
+}
+
+.session-list-empty h3 {
+	font-size: 16px;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+
+.session-list-empty p {
+	color: var(--vscode-descriptionForeground);
+	font-size: 13px;
+}
+
+/* Session Item */
+.session-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	transition: background-color 0.1s;
+}
+
+.session-item:hover {
+	background-color: var(--vscode-list-hoverBackground);
+}
+
+.session-item-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.session-title-btn {
+	background: none;
+	border: none;
+	padding: 0;
+	text-align: left;
+	cursor: pointer;
+	color: var(--vscode-foreground);
+	font-size: 14px;
+}
+
+.session-title-btn:hover {
+	color: var(--vscode-textLink-foreground);
+}
+
+.session-title {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.session-timestamp {
+	font-size: 12px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.session-item-actions {
+	display: flex;
+	gap: 4px;
+	flex-shrink: 0;
+	opacity: 0;
+	transition: opacity 0.1s;
+}
+
+.session-item:hover .session-item-actions {
+	opacity: 1;
+}
+
+/* Session Edit Mode */
+.session-item-editing {
+	background-color: var(--vscode-list-activeSelectionBackground);
+}
+
+.session-edit-form {
+	flex: 1;
+}
+
+.session-edit-input {
+	width: 100%;
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-focusBorder);
+	padding: 6px 8px;
+	font-size: 14px;
+	border-radius: 2px;
+}
+
+.session-edit-input:focus {
+	outline: none;
+}
+
+/* Pagination */
+.session-list-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	padding: 16px;
+	border-top: 1px solid var(--vscode-panel-border);
+	background-color: var(--vscode-sideBar-background);
+}
+
+.pagination-info {
+	font-size: 13px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.btn-prev,
+.btn-next {
+	font-size: 12px;
+	padding: 6px 12px;
+}
+
+.btn-prev:disabled,
+.btn-next:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
