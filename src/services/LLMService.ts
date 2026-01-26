@@ -124,21 +124,15 @@ export class LLMService {
 			// Parse SSE stream
 			await this._parseSSEStream(response, onChunk, onComplete);
 		} catch (error) {
+		} catch (error) {
 			clearTimeout(timeoutId);
 
 			if (isAbortError(error)) {
-				// Check if it was a timeout or manual cancellation
-				if (controller.signal.aborted) {
-					// Could be timeout or manual abort
-					// We set a timeout, so if signal is aborted it could be either
-					// In our implementation, we clear timeout on success, so if we're here
-					// it's either timeout or manual abort
-					// The timeout calls abort(), so we need to differentiate
-					// For simplicity, we'll throw TimeoutError if timeout wasn't cleared
-					throw new TimeoutError('Request timed out after 30 seconds');
-				}
 				throw new RequestCancelledError('Request was cancelled');
 			}
+
+			throw error;
+		}
 
 			throw error;
 		}
