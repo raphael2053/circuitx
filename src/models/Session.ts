@@ -130,7 +130,7 @@ export function generateSessionTitle(content: string): string {
 	if (trimmed.length <= 30) {
 		return trimmed;
 	}
-	return trimmed.substring(0, 30) + '...';
+	return trimmed.substring(0, 27) + '...';
 }
 
 // Helper functions
